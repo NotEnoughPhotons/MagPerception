@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace NEP.MagPerception.src.Utilities
+namespace NEP.MagPerception
 {
     public static class Fusion
     {

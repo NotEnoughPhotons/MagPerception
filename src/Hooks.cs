@@ -1,7 +1,5 @@
 ﻿using Il2CppSLZ.Marrow;
 
-using NEP.MagPerception.src.Utilities;
-
 namespace NEP.MagPerception
 {
     public static class Hooks
