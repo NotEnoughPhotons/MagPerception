@@ -8,7 +8,9 @@ namespace NEP.MagPerception.UI
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class MagazineUI : MonoBehaviour
     {
-        public MagazineUI(System.IntPtr ptr) : base(ptr) { }
+        public MagazineUI(System.IntPtr ptr) : base(ptr)
+        {
+        }
 
         public TextMeshProUGUI ammoCounterText;
         public TextMeshProUGUI ammoInventoryText;
@@ -16,13 +18,13 @@ namespace NEP.MagPerception.UI
 
         public Animator animator;
 
-        public bool isBeingInteracted { get; set; } = false;
+        public bool IsBeingInteracted { get; set; } = false;
 
         private float timeSinceLastEvent = 0.0f;
         private bool fadeOut = false;
 
         private float fadeOutTime = 0.0f;
-        private float fadeOutDuration = 0.25f;
+        private const float fadeOutDuration = 0.25f;
 
         private Vector3 targetPosition;
         private Quaternion lastRotation;
@@ -34,13 +36,13 @@ namespace NEP.MagPerception.UI
 
         private void FixedUpdate()
         {
-            transform.localScale = new Vector3(-1f, 1f, 1f) * Settings.InfoScale;
+            transform.localScale = new Vector3(-1f, 1f, 1f) * Settings.Instance.InfoScale;
             transform.LookAt(BoneLib.Player.Head);
 
-            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition + Settings.Offset, 8f * Time.fixedDeltaTime);
+            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition + Settings.Instance.Offset, 8f * Time.fixedDeltaTime);
             transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);
 
-            UIShowType showType = Settings.ShowType;
+            UIShowType showType = Settings.Instance.ShowType;
 
             if (showType == UIShowType.Always)
             {
@@ -51,7 +53,7 @@ namespace NEP.MagPerception.UI
             {
                 timeSinceLastEvent += Time.deltaTime;
 
-                if (timeSinceLastEvent > Settings.TimeUntilHidden)
+                if (timeSinceLastEvent > Settings.Instance.TimeUntilHidden)
                 {
                     timeSinceLastEvent = 0.0f;
                     FadeOut();
@@ -75,7 +77,7 @@ namespace NEP.MagPerception.UI
 
         public void OnMagEvent()
         {
-            UIShowType showType = Settings.ShowType;
+            UIShowType showType = Settings.Instance.ShowType;
 
             if (showType == UIShowType.Always)
             {
@@ -85,7 +87,7 @@ namespace NEP.MagPerception.UI
             {
                 FadeIn();
             }
-            else if(showType == UIShowType.Hide)
+            else if (showType == UIShowType.Hide)
             {
                 Hide();
             }

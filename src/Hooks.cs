@@ -1,5 +1,7 @@
 ﻿using Il2CppSLZ.Marrow;
 
+using NEP.MagPerception.src.Utilities;
+
 namespace NEP.MagPerception
 {
     public static class Hooks
@@ -9,39 +11,49 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Hand hand, Magazine __instance)
             {
-                MagPerceptionManager.instance.OnMagazineAttached(__instance);
+                if (hand?.IsPartOfLocalPlayer() == false)
+                    return;
+
+                MagPerceptionManager.Instance.OnMagazineAttached(__instance);
             }
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnTriggerGripAttached))]
         public static class OnGunAttached
         {
-            public static void Postfix(Gun __instance)
+            public static void Postfix(Hand hand, Gun __instance)
             {
-                MagPerceptionManager.instance.OnGunAttached(__instance);
+                if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsGunMine() == false)
+                    return;
+
+                MagPerceptionManager.Instance.OnGunAttached(__instance);
             }
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnTriggerGripDetached))]
         public static class OnGunDetached
         {
-            public static void Postfix(Gun __instance)
+            public static void Postfix(Hand hand, Gun __instance)
             {
                 if (__instance == null)
-                {
                     return;
-                }
-                
-                MagPerceptionManager.instance.OnGunDetached(__instance);
+
+                if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsGunMine() == false)
+                    return;
+
+                MagPerceptionManager.Instance.OnGunDetached(__instance);
             }
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.EjectCartridge))]
         public static class OnGunEjectRound
         {
-            public static void Postfix()
+            public static void Postfix(Gun __instance)
             {
-                MagPerceptionManager.instance.OnGunEjectRound();
+                if (__instance?.IsGunMine() == false)
+                    return;
+
+                MagPerceptionManager.Instance.OnGunEjectRound();
             }
         }
 
@@ -50,7 +62,10 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
-                MagPerceptionManager.instance.OnMagazineInserted(__instance.MagazineState, __instance);
+                if (__instance?.IsGunMine() == false)
+                    return;
+
+                MagPerceptionManager.Instance.OnMagazineInserted(__instance);
             }
         }
 
@@ -59,7 +74,10 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
-                MagPerceptionManager.instance.OnMagazineInserted(__instance.MagazineState, __instance);
+                if (__instance?.IsGunMine() == false)
+                    return;
+
+                MagPerceptionManager.Instance.OnMagazineInserted(__instance);
             }
         }
     }

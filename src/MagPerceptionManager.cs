@@ -11,38 +11,34 @@ namespace NEP.MagPerception
     [MelonLoader.RegisterTypeInIl2Cpp]
     public class MagPerceptionManager : MonoBehaviour
     {
-        public MagPerceptionManager(System.IntPtr ptr) : base(ptr) { }
+        public MagPerceptionManager(System.IntPtr ptr) : base(ptr)
+        {
+        }
 
-        public static MagPerceptionManager instance;
+        public static MagPerceptionManager Instance { get; private set; }
 
-        public MagazineUI magazineUI { get; private set; }
+        public MagazineUI MagazineUI { get; private set; }
 
-        public MagazineData grabbedMagazineData { get; private set; }
-
-        public Hand playerLeftHand => BoneLib.Player.LeftHand;
-        public Hand playerRightHand => BoneLib.Player.RightHand;
-
-        public Transform lastGrabbedTransform;
         public Gun lastGun;
+
         public Magazine lastMag;
-        public Hand lastHand;
 
         private void Awake()
         {
-            instance = this;
+            Instance = this;
         }
 
         private void Start()
         {
-            GameObject magUI = GameObject.Instantiate(Main.resources.LoadAsset("MagazineLayer").Cast<GameObject>(), transform);
+            GameObject magUI = GameObject.Instantiate(Main.Resources.LoadAsset("MagazineLayer").Cast<GameObject>(), transform);
 
             magUI.transform.SetParent(transform);
-            magazineUI = magUI.AddComponent<MagazineUI>();
+            MagazineUI = magUI.AddComponent<MagazineUI>();
 
-            magazineUI.ammoCounterText = magUI.transform.Find("AmmoCounter").GetComponent<TextMeshProUGUI>();
-            magazineUI.ammoInventoryText = magUI.transform.Find("AmmoInventory").GetComponent<TextMeshProUGUI>();
-            magazineUI.ammoTypeText = magUI.transform.Find("AmmoType").GetComponent<TextMeshProUGUI>();
-            magazineUI.animator = magUI.GetComponent<Animator>();
+            MagazineUI.ammoCounterText = magUI.transform.Find("AmmoCounter").GetComponent<TextMeshProUGUI>();
+            MagazineUI.ammoInventoryText = magUI.transform.Find("AmmoInventory").GetComponent<TextMeshProUGUI>();
+            MagazineUI.ammoTypeText = magUI.transform.Find("AmmoType").GetComponent<TextMeshProUGUI>();
+            MagazineUI.animator = magUI.GetComponent<Animator>();
 
             magUI.SetActive(false);
         }
@@ -53,33 +49,40 @@ namespace NEP.MagPerception
         public void OnMagazineAttached(Magazine magazine)
         {
             lastMag = magazine;
-            magazineUI.Show();
-            magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(lastMag.insertPointTransform);
-            magazineUI.DisplayMagInfo(magazine.magazineState);
+            MagazineUI.Show();
+            MagazineUI.OnMagEvent();
+            MagazineUI.UpdateParent(lastMag.insertPointTransform);
+            MagazineUI.DisplayMagInfo(magazine.magazineState);
         }
 
         /// <summary>
         /// Called when the player inserts a magazine into their gun.
         /// </summary>
-        public void OnMagazineInserted(MagazineState magazineState, Gun gun)
+        public void OnMagazineInserted(Gun gun)
         {
             lastGun = gun;
-            magazineUI.Show();
-            magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(lastGun.firePointTransform);
-            magazineUI.DisplayGunInfo(lastGun);
+
+            if (!Settings.Instance.ShowWithGun)
+                return;
+
+            MagazineUI.Show();
+            MagazineUI.OnMagEvent();
+            MagazineUI.UpdateParent(lastGun.firePointTransform);
+            MagazineUI.DisplayGunInfo(lastGun);
         }
 
         /// <summary>
         /// Called when the player ejects the magazine from their gun.
         /// </summary>
-        public void OnMagazineEjected(MagazineState magazineState, Gun gun)
+        public void OnMagazineEjected()
         {
-            magazineUI.Show();
-            magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(lastGun.firePointTransform);
-            magazineUI.DisplayGunInfo(lastGun);
+            if (!Settings.Instance.ShowWithGun)
+                return;
+
+            MagazineUI.Show();
+            MagazineUI.OnMagEvent();
+            MagazineUI.UpdateParent(lastGun.firePointTransform);
+            MagazineUI.DisplayGunInfo(lastGun);
         }
 
         /// <summary>
@@ -87,15 +90,13 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnGunAttached(Gun gun)
         {
-            if (!Settings.ShowWithGun)
-            {
+            if (!Settings.Instance.ShowWithGun)
                 return;
-            }
 
             lastGun = gun;
-            magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(gun.firePointTransform);
-            magazineUI.Show();
+            MagazineUI.OnMagEvent();
+            MagazineUI.UpdateParent(gun.firePointTransform);
+            MagazineUI.Show();
         }
 
         /// <summary>
@@ -103,18 +104,16 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnGunDetached(Gun gun)
         {
-            if (!Settings.ShowWithGun)
-            {
+            if (!Settings.Instance.ShowWithGun)
                 return;
-            }
 
             lastGun = null;
-            magazineUI.OnMagEvent();
+            MagazineUI.OnMagEvent();
 
-            if(lastMag != null)
+            if (lastMag != null)
             {
-                magazineUI.UpdateParent(gun.firePointTransform);
-                magazineUI.DisplayMagInfo(lastMag.magazineState);
+                MagazineUI.UpdateParent(gun.firePointTransform);
+                MagazineUI.DisplayMagInfo(lastMag.magazineState);
             }
         }
 
@@ -123,13 +122,11 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnGunEjectRound()
         {
-            if (!Settings.ShowWithGun)
-            {
+            if (!Settings.Instance.ShowWithGun)
                 return;
-            }
 
-            magazineUI.OnMagEvent();
-            magazineUI.DisplayGunInfo(lastGun);
+            MagazineUI.OnMagEvent();
+            MagazineUI.DisplayGunInfo(lastGun);
         }
     }
 }
