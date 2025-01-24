@@ -19,9 +19,9 @@ namespace NEP.MagPerception
 
         public MagazineUI MagazineUI { get; private set; }
 
-        public Gun lastGun;
+        public Gun LastGun { get; internal set; }
 
-        public Magazine lastMag;
+        public Magazine LastMag { get; internal set; }
 
         private void Awake()
         {
@@ -35,10 +35,10 @@ namespace NEP.MagPerception
             magUI.transform.SetParent(transform);
             MagazineUI = magUI.AddComponent<MagazineUI>();
 
-            MagazineUI.ammoCounterText = magUI.transform.Find("AmmoCounter").GetComponent<TextMeshProUGUI>();
-            MagazineUI.ammoInventoryText = magUI.transform.Find("AmmoInventory").GetComponent<TextMeshProUGUI>();
-            MagazineUI.ammoTypeText = magUI.transform.Find("AmmoType").GetComponent<TextMeshProUGUI>();
-            MagazineUI.animator = magUI.GetComponent<Animator>();
+            MagazineUI.AmmoCounterText = magUI.transform.Find("AmmoCounter").GetComponent<TextMeshProUGUI>();
+            MagazineUI.AmmoInventoryText = magUI.transform.Find("AmmoInventory").GetComponent<TextMeshProUGUI>();
+            MagazineUI.AmmoTypeText = magUI.transform.Find("AmmoType").GetComponent<TextMeshProUGUI>();
+            MagazineUI.Animator = magUI.GetComponent<Animator>();
 
             magUI.SetActive(false);
         }
@@ -48,10 +48,10 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnMagazineAttached(Magazine magazine)
         {
-            lastMag = magazine;
+            LastMag = magazine;
             MagazineUI.Show();
             MagazineUI.OnMagEvent();
-            MagazineUI.UpdateParent(lastMag.insertPointTransform);
+            MagazineUI.UpdateParent(LastMag.insertPointTransform);
             MagazineUI.DisplayMagInfo(magazine.magazineState);
         }
 
@@ -60,15 +60,15 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnMagazineInserted(Gun gun)
         {
-            lastGun = gun;
+            LastGun = gun;
 
             if (!Settings.Instance.ShowWithGun)
                 return;
 
             MagazineUI.Show();
             MagazineUI.OnMagEvent();
-            MagazineUI.UpdateParent(lastGun.firePointTransform);
-            MagazineUI.DisplayGunInfo(lastGun);
+            MagazineUI.UpdateParent(LastGun.firePointTransform);
+            MagazineUI.DisplayGunInfo(LastGun);
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace NEP.MagPerception
 
             MagazineUI.Show();
             MagazineUI.OnMagEvent();
-            MagazineUI.UpdateParent(lastGun.firePointTransform);
-            MagazineUI.DisplayGunInfo(lastGun);
+            MagazineUI.UpdateParent(LastGun.firePointTransform);
+            MagazineUI.DisplayGunInfo(LastGun);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace NEP.MagPerception
             if (!Settings.Instance.ShowWithGun)
                 return;
 
-            lastGun = gun;
+            LastGun = gun;
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(gun.firePointTransform);
             MagazineUI.Show();
@@ -107,13 +107,13 @@ namespace NEP.MagPerception
             if (!Settings.Instance.ShowWithGun)
                 return;
 
-            lastGun = null;
+            LastGun = null;
             MagazineUI.OnMagEvent();
 
-            if (lastMag != null)
+            if (LastMag != null)
             {
                 MagazineUI.UpdateParent(gun.firePointTransform);
-                MagazineUI.DisplayMagInfo(lastMag.magazineState);
+                MagazineUI.DisplayMagInfo(LastMag.magazineState);
             }
         }
 
@@ -126,7 +126,7 @@ namespace NEP.MagPerception
                 return;
 
             MagazineUI.OnMagEvent();
-            MagazineUI.DisplayGunInfo(lastGun);
+            MagazineUI.DisplayGunInfo(LastGun);
         }
     }
 }
