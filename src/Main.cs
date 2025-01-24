@@ -25,9 +25,7 @@ namespace NEP.MagPerception
 
     public class Main : MelonMod
     {
-        public static AssetBundle Resources { get; private set; }
-
-        public static bool HasFusion => HelperMethods.CheckIfAssemblyLoaded("labfusion");
+        internal static AssetBundle Resources { get; private set; }
 
         internal static MelonPreferences_ReflectiveCategory PrefsCategory { get; private set; }
 
@@ -82,7 +80,7 @@ namespace NEP.MagPerception
             new GameObject("Mag Perception Manager").AddComponent<MagPerceptionManager>();
         }
 
-        public static Object GetObjectFromResources(string name)
+        internal static Object GetObjectFromResources(string name)
         {
             Object[] objects = Resources.LoadAllAssets();
 

@@ -1,11 +1,18 @@
-﻿using Il2CppSLZ.Marrow;
+﻿using BoneLib;
+
+using Il2CppSLZ.Marrow;
 
 using UnityEngine;
 
 namespace NEP.MagPerception
 {
+    /// <summary>
+    /// Class that holds all of the methods to bring compatibility with Fusion. Public methods have checks to prevent using methods from the assembly when it isn't present
+    /// </summary>
     public static class Fusion
     {
+        public static bool HasFusion => HelperMethods.CheckIfAssemblyLoaded("labfusion");
+
         private static bool Internal_IsConnected()
         {
             return LabFusion.Network.NetworkInfo.HasServer;
@@ -15,7 +22,7 @@ namespace NEP.MagPerception
         {
             get
             {
-                if (Main.HasFusion) return Internal_IsConnected();
+                if (HasFusion) return Internal_IsConnected();
                 else return false;
             }
         }
