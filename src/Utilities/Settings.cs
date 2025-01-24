@@ -9,7 +9,7 @@ namespace NEP.MagPerception
     public class Settings
     {
         [TomlNonSerialized]
-        public static Settings Instance;
+        public static Settings Instance { get; internal set; }
 
         [TomlNonSerialized]
         private float _infoScale = 0.75f;
@@ -29,7 +29,7 @@ namespace NEP.MagPerception
         }
 
         [TomlNonSerialized]
-        private Vector3 _offset = new Vector3(0.075f, 0f, 0f);
+        private Vector3 _offset = new(0.075f, 0f, 0f);
 
         [TomlProperty("Offset")]
         public Vector3 Offset
