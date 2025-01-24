@@ -12,13 +12,11 @@ namespace NEP.MagPerception.UI
         {
         }
 
-        public TextMeshProUGUI ammoCounterText;
-        public TextMeshProUGUI ammoInventoryText;
-        public TextMeshProUGUI ammoTypeText;
+        public TextMeshProUGUI AmmoCounterText { get; internal set; }
+        public TextMeshProUGUI AmmoInventoryText { get; internal set; }
+        public TextMeshProUGUI AmmoTypeText { get; internal set; }
 
-        public Animator animator;
-
-        public bool IsBeingInteracted { get; set; } = false;
+        public Animator Animator { get; internal set; }
 
         private float timeSinceLastEvent = 0.0f;
         private bool fadeOut = false;
@@ -26,12 +24,9 @@ namespace NEP.MagPerception.UI
         private float fadeOutTime = 0.0f;
         private const float fadeOutDuration = 0.25f;
 
-        private Vector3 targetPosition;
-        private Quaternion lastRotation;
-
         private void Awake()
         {
-            animator = GetComponent<Animator>();
+            Animator = GetComponent<Animator>();
         }
 
         private void FixedUpdate()
@@ -39,8 +34,8 @@ namespace NEP.MagPerception.UI
             transform.localScale = new Vector3(-1f, 1f, 1f) * Settings.Instance.InfoScale;
             transform.LookAt(BoneLib.Player.Head);
 
-            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition + Settings.Instance.Offset, 8f * Time.fixedDeltaTime);
-            transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);
+            transform.localPosition = Vector3.Lerp(transform.localPosition, Vector3.zero + Settings.Instance.Offset, 8f * Time.fixedDeltaTime);
+            transform.rotation = Quaternion.Slerp(Quaternion.identity, transform.rotation, 8f * Time.fixedDeltaTime);
 
             UIShowType showType = Settings.Instance.ShowType;
 
@@ -66,14 +61,10 @@ namespace NEP.MagPerception.UI
         }
 
         public void Show()
-        {
-            gameObject.SetActive(true);
-        }
+            => gameObject.SetActive(true);
 
         public void Hide()
-        {
-            gameObject.SetActive(false);
-        }
+            => gameObject.SetActive(false);
 
         public void OnMagEvent()
         {
@@ -102,15 +93,15 @@ namespace NEP.MagPerception.UI
                 return;
             }
 
-            string counterText = "";
             var magazineState = gun.MagazineState;
 
+            string counterText;
             if (magazineState == null)
             {
                 counterText = gun.chamberedCartridge != null ? "+1/0" : "0/0";
-                ammoCounterText.text = counterText;
-                ammoInventoryText.text = "RESERVE: None";
-                ammoTypeText.text = "Unknown";
+                AmmoCounterText.text = counterText;
+                AmmoInventoryText.text = "RESERVE: None";
+                AmmoTypeText.text = "Unknown";
                 return;
             }
 
@@ -122,26 +113,17 @@ namespace NEP.MagPerception.UI
 
             var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
 
-            if (toppedOff)
-            {
-                counterText = $"{ammoCount}+1/{maxAmmo}";
-            }
-            else
-            {
-                counterText = $"{ammoCount}/{maxAmmo}";
-            }
+            counterText = toppedOff ? $"{ammoCount}+1/{maxAmmo}" : $"{ammoCount}/{maxAmmo}";
 
-            ammoCounterText.text = counterText;
-            ammoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
-            ammoTypeText.text = ammoType;
+            AmmoCounterText.text = counterText;
+            AmmoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
+            AmmoTypeText.text = ammoType;
         }
 
         public void DisplayMagInfo(MagazineState magazineState)
         {
             if (magazineState == null)
-            {
                 return;
-            }
 
             int ammoCount = magazineState.AmmoCount;
             int maxAmmo = magazineState.magazineData.rounds;
@@ -149,9 +131,9 @@ namespace NEP.MagPerception.UI
 
             var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
 
-            ammoCounterText.text = $"{ammoCount}/{maxAmmo}";
-            ammoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
-            ammoTypeText.text = ammoType;
+            AmmoCounterText.text = $"{ammoCount}/{maxAmmo}";
+            AmmoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
+            AmmoTypeText.text = ammoType;
         }
 
         public void UpdateParent(Transform attachment)
@@ -165,7 +147,7 @@ namespace NEP.MagPerception.UI
             if (fadeOut)
             {
                 gameObject.SetActive(true);
-                animator?.Play("mag_enter_01");
+                Animator?.Play("mag_enter_01");
                 fadeOut = false;
             }
         }
@@ -174,7 +156,7 @@ namespace NEP.MagPerception.UI
         {
             if (!fadeOut)
             {
-                animator?.SetTrigger("exit");
+                Animator?.SetTrigger("exit");
                 fadeOut = true;
             }
             else
