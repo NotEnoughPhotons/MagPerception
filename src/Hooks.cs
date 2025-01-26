@@ -9,7 +9,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Hand hand, Magazine __instance)
             {
-                if (hand?.IsPartOfLocalPlayer() == false)
+                if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsMagazineMine() == false)
                     return;
 
                 MagPerceptionManager.Instance.OnMagazineAttached(__instance);
@@ -39,7 +39,7 @@ namespace NEP.MagPerception
                 if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsGunMine() == false)
                     return;
 
-                MagPerceptionManager.Instance.OnGunDetached(__instance);
+                MagPerceptionManager.Instance.OnGunDetached();
             }
         }
 

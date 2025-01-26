@@ -102,7 +102,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a player lets go of a gun.
         /// </summary>
-        public void OnGunDetached(Gun gun)
+        public void OnGunDetached()
         {
             if (!Settings.Instance.ShowWithGun)
                 return;
@@ -112,7 +112,7 @@ namespace NEP.MagPerception
 
             if (LastMag != null)
             {
-                MagazineUI.UpdateParent(gun.firePointTransform);
+                MagazineUI.UpdateParent(LastMag.insertPointTransform);
                 MagazineUI.DisplayMagInfo(LastMag.magazineState);
             }
         }

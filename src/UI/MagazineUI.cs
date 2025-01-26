@@ -24,6 +24,8 @@ namespace NEP.MagPerception.UI
         private float fadeOutTime = 0.0f;
         private const float fadeOutDuration = 0.25f;
 
+        private Quaternion lastRotation;
+
         private void Awake()
         {
             Animator = GetComponent<Animator>();
@@ -35,7 +37,7 @@ namespace NEP.MagPerception.UI
             transform.LookAt(BoneLib.Player.Head);
 
             transform.localPosition = Vector3.Lerp(transform.localPosition, Vector3.zero + Settings.Instance.Offset, 8f * Time.fixedDeltaTime);
-            transform.rotation = Quaternion.Slerp(Quaternion.identity, transform.rotation, 8f * Time.fixedDeltaTime);
+            transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);
 
             UIShowType showType = Settings.Instance.ShowType;
 
