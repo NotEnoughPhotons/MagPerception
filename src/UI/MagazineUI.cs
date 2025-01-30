@@ -143,18 +143,18 @@ namespace NEP.MagPerception.UI
             transform.parent = attachment;
         }
 
-        private void FadeIn()
+        public void FadeIn()
         {
             timeSinceLastEvent = 0.0f;
             if (fadeOut)
             {
-                gameObject.SetActive(true);
+                Show();
                 Animator?.Play("mag_enter_01");
                 fadeOut = false;
             }
         }
 
-        private void FadeOut()
+        public void FadeOut()
         {
             if (!fadeOut)
             {
@@ -168,7 +168,7 @@ namespace NEP.MagPerception.UI
                 if (fadeOutTime > fadeOutDuration)
                 {
                     fadeOutTime = 0.0f;
-                    gameObject.SetActive(false);
+                    Hide();
                 }
             }
         }

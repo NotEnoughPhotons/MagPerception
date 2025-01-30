@@ -1,4 +1,6 @@
-﻿using Il2CppSLZ.Marrow;
+﻿using System;
+
+using Il2CppSLZ.Marrow;
 
 namespace NEP.MagPerception
 {
@@ -7,12 +9,25 @@ namespace NEP.MagPerception
         [HarmonyLib.HarmonyPatch(typeof(Magazine), nameof(Magazine.OnGrab))]
         public static class OnMagAttached
         {
+            public static Magazine Magazine { get; private set; } = null;
+
+            public static void Detached(Hand hand)
+            {
+                if (Magazine == null)
+                    return;
+
+                MagPerceptionManager.Instance.OnMagazineDetached(Magazine);
+                Magazine.grip.remove_detachedHandDelegate((Grip.HandDelegate)Detached);
+            }
+
             public static void Postfix(Hand hand, Magazine __instance)
             {
                 if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsMagazineMine() == false)
                     return;
 
                 MagPerceptionManager.Instance.OnMagazineAttached(__instance);
+                Magazine = __instance;
+                __instance.grip.add_detachedHandDelegate((Grip.HandDelegate)Detached);
             }
         }
 

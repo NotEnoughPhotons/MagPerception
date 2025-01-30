@@ -3,7 +3,6 @@
 using NEP.MagPerception.UI;
 
 using Il2CppSLZ.Marrow;
-using Il2CppSLZ.Marrow.Data;
 using Il2CppTMPro;
 
 namespace NEP.MagPerception
@@ -53,6 +52,29 @@ namespace NEP.MagPerception
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(LastMag.insertPointTransform);
             MagazineUI.DisplayMagInfo(magazine.magazineState);
+        }
+
+        /// <summary>
+        /// Called when a magazine previously grabbed is dropped
+        /// </summary>
+        public void OnMagazineDetached(Magazine magazine)
+        {
+            if (magazine != LastMag)
+                return;
+
+            LastMag = null;
+            MagazineUI.Hide();
+            MagazineUI.OnMagEvent();
+
+            if (LastGun != null)
+            {
+                MagazineUI.UpdateParent(LastGun.firePointTransform);
+                MagazineUI.DisplayGunInfo(LastGun);
+            }
+            else
+            {
+                MagazineUI.FadeOut();
+            }
         }
 
         /// <summary>
@@ -114,6 +136,10 @@ namespace NEP.MagPerception
             {
                 MagazineUI.UpdateParent(LastMag.insertPointTransform);
                 MagazineUI.DisplayMagInfo(LastMag.magazineState);
+            }
+            else
+            {
+                MagazineUI.FadeOut();
             }
         }
 
