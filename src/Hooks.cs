@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 using Il2CppSLZ.Marrow;
 
@@ -9,15 +9,27 @@ namespace NEP.MagPerception
         [HarmonyLib.HarmonyPatch(typeof(Magazine), nameof(Magazine.OnGrab))]
         public static class OnMagAttached
         {
-            public static Magazine Magazine { get; private set; } = null;
+            public static Magazine CurrentMagazine { get; private set; } = null;
+
+            public static Hand HoldingHand { get; private set; } = null;
+
+            private readonly static List<Magazine> PatchedMags = [];
+
+            private static Grip.HandDelegate HandDelegate = null;
 
             public static void Detached(Hand hand)
             {
-                if (Magazine == null)
+                if (CurrentMagazine == null)
                     return;
 
-                MagPerceptionManager.Instance.OnMagazineDetached(Magazine);
-                Magazine.grip.remove_detachedHandDelegate((Grip.HandDelegate)Detached);
+                if (hand?.IsPartOfLocalPlayer() == true)
+                    MagPerceptionManager.Instance.OnMagazineDetached(CurrentMagazine);
+
+                if (HandDelegate != null)
+                    CurrentMagazine.grip.remove_detachedHandDelegate(HandDelegate);
+
+                CurrentMagazine = null;
+                HoldingHand = null;
             }
 
             public static void Postfix(Hand hand, Magazine __instance)
@@ -26,8 +38,10 @@ namespace NEP.MagPerception
                     return;
 
                 MagPerceptionManager.Instance.OnMagazineAttached(__instance);
-                Magazine = __instance;
-                __instance.grip.add_detachedHandDelegate((Grip.HandDelegate)Detached);
+                CurrentMagazine = __instance;
+                HoldingHand = hand;
+                HandDelegate = (Grip.HandDelegate)Detached;
+                __instance.grip.add_detachedHandDelegate(HandDelegate);
             }
         }
 

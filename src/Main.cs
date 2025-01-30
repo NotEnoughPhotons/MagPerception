@@ -86,5 +86,35 @@ namespace NEP.MagPerception
 
             return objects.FirstOrDefault((asset) => asset.name == name);
         }
+
+        bool pressedDown = false;
+
+        public override void OnUpdate()
+        {
+            base.OnUpdate();
+
+            var mag = Hooks.OnMagAttached.CurrentMagazine;
+            var hand = Hooks.OnMagAttached.HoldingHand;
+
+            if (hand != null)
+            {
+                if (hand.Controller == null)
+                    return;
+
+                if (!hand.Controller.GetMenuButtonDown())
+                {
+                    pressedDown = false;
+                }
+                else
+                {
+                    if (!pressedDown)
+                    {
+                        pressedDown = true;
+                        if (mag != null && !MagPerceptionManager.Instance.MagazineUI.IsShown)
+                            MagPerceptionManager.Instance.OnMagazineAttached(mag);
+                    }
+                }
+            }
+        }
     }
 }
