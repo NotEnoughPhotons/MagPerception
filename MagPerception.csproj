@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<TargetFramework>net6.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
 	<OutputType>Library</OutputType>
 	<RootNamespace>NEP.MagPerception</RootNamespace>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
