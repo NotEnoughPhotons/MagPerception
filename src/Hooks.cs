@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Il2CppSLZ.Marrow;
 
@@ -53,7 +55,50 @@ namespace NEP.MagPerception
                 if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsGunMine() == false)
                     return;
 
+                MagPerceptionManager.Instance.LastGunGrips.Add(__instance.triggerGrip);
                 MagPerceptionManager.Instance.OnGunAttached(__instance);
+            }
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(Grip), nameof(Grip.OnAttachedToHand))]
+        public static class OnSlideGripAttached
+        {
+            public static void Postfix(Hand hand, Grip __instance)
+            {
+                if (hand?.IsPartOfLocalPlayer() == false)
+                    return;
+
+                var gun = __instance?.GetComponentInParent<Gun>();
+
+                if (gun == null || gun?.IsGunMine() != true)
+                    return;
+
+                if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
+                    return;
+
+                MagPerceptionManager.Instance.LastGunGrips.Add(__instance);
+                MagPerceptionManager.Instance.OnGunAttached(gun);
+            }
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(Grip), nameof(Grip.OnDetachedFromHand))]
+        public static class OnSlideGripDetached
+        {
+            public static void Postfix(Hand hand, Grip __instance)
+            {
+                if (hand?.IsPartOfLocalPlayer() == false)
+                    return;
+
+                var gun = __instance?.GetComponentInParent<Gun>();
+
+                if (gun == null || gun?.IsGunMine() != true)
+                    return;
+
+                if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
+                    return;
+
+                MagPerceptionManager.Instance.LastGunGrips.Remove(__instance);
+                MagPerceptionManager.Instance.OnGunDetached(gun);
             }
         }
 
@@ -68,7 +113,8 @@ namespace NEP.MagPerception
                 if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsGunMine() == false)
                     return;
 
-                MagPerceptionManager.Instance.OnGunDetached();
+                MagPerceptionManager.Instance.LastGunGrips.Remove(__instance.triggerGrip);
+                MagPerceptionManager.Instance.OnGunDetached(__instance);
             }
         }
 
@@ -80,7 +126,7 @@ namespace NEP.MagPerception
                 if (__instance?.IsGunMine() == false)
                     return;
 
-                MagPerceptionManager.Instance.OnGunEjectRound();
+                MagPerceptionManager.Instance.OnGunEjectRound(__instance);
             }
         }
 

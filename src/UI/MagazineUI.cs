@@ -2,6 +2,7 @@
 
 using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
+using Il2CppSLZ.Marrow.Data;
 
 namespace NEP.MagPerception.UI
 {
@@ -15,12 +16,14 @@ namespace NEP.MagPerception.UI
         public Animator Animator { get; internal set; }
 
         private float timeSinceLastEvent = 0.0f;
-        private bool fadeOut = false;
+        internal bool fadeOut = false;
 
         private float fadeOutTime = 0.0f;
         private const float fadeOutDuration = 0.25f;
 
         private Quaternion lastRotation;
+
+        public DisplayInfo DisplayInfo { get; private set; } = null;
 
         public bool IsShown => gameObject.active;
 
@@ -36,6 +39,15 @@ namespace NEP.MagPerception.UI
 
             transform.localPosition = Vector3.Lerp(transform.localPosition, Vector3.zero + Settings.Instance.Offset, 8f * Time.fixedDeltaTime);
             transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);
+
+            if (AmmoCounterText != null)
+                AmmoCounterText.alpha = Settings.Instance.TextOpacity;
+
+            if (AmmoTypeText != null)
+                AmmoTypeText.alpha = Settings.Instance.TextOpacity;
+
+            if (AmmoInventoryText != null)
+                AmmoInventoryText.alpha = Settings.Instance.TextOpacity;
 
             UIShowType showType = Settings.Instance.ShowType;
 
@@ -72,7 +84,8 @@ namespace NEP.MagPerception.UI
 
             if (showType == UIShowType.Always)
             {
-                // undefined
+                if (!IsShown)
+                    FadeIn();
             }
             else if (showType == UIShowType.FadeShow)
             {
@@ -84,12 +97,17 @@ namespace NEP.MagPerception.UI
             }
         }
 
+        public CartridgeData CartridgeData { get; private set; } = null;
+
         public void DisplayGunInfo(Gun gun)
         {
+            DisplayInfo = new DisplayInfo(DisplayInfo.DisplayFor.GUN, gun);
             if (gun == null)
             {
                 // Chances are you are charging the gun with your hand off the main grip.
                 // Will fix in the future.
+
+                // Future person here, this is fixed
                 return;
             }
 
@@ -111,6 +129,8 @@ namespace NEP.MagPerception.UI
             int maxAmmo = magazineState.magazineData.rounds;
             string ammoType = magazineState.magazineData.platform;
 
+            CartridgeData = magazineState.cartridgeData;
+
             var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
 
             counterText = toppedOff ? $"{ammoCount}+1/{maxAmmo}" : $"{ammoCount}/{maxAmmo}";
@@ -122,6 +142,7 @@ namespace NEP.MagPerception.UI
 
         public void DisplayMagInfo(MagazineState magazineState)
         {
+            DisplayInfo = new DisplayInfo(DisplayInfo.DisplayFor.MAG, magazineState);
             if (magazineState == null)
                 return;
 
@@ -129,11 +150,29 @@ namespace NEP.MagPerception.UI
             int maxAmmo = magazineState.magazineData.rounds;
             string ammoType = magazineState.magazineData.platform;
 
+            CartridgeData = magazineState.cartridgeData;
+
             var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
 
             AmmoCounterText.text = $"{ammoCount}/{maxAmmo}";
             AmmoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
             AmmoTypeText.text = ammoType;
+        }
+
+        public void UpdateInfo(DisplayInfo info)
+        {
+            if (info == null) return;
+
+            if (info.Type == DisplayInfo.DisplayFor.GUN)
+            {
+                if (info.Object is Gun gun)
+                    DisplayGunInfo(gun);
+            }
+            else if (info.Type == DisplayInfo.DisplayFor.MAG)
+            {
+                if (info.Object is MagazineState mag)
+                    DisplayMagInfo(mag);
+            }
         }
 
         public void UpdateParent(Transform attachment)
@@ -144,7 +183,7 @@ namespace NEP.MagPerception.UI
         public void FadeIn()
         {
             timeSinceLastEvent = 0.0f;
-            if (fadeOut)
+            if (!IsShown)
             {
                 Show();
                 Animator?.Play("mag_enter_01");
@@ -169,6 +208,20 @@ namespace NEP.MagPerception.UI
                     Hide();
                 }
             }
+        }
+    }
+
+    public class DisplayInfo(DisplayInfo.DisplayFor Type, object Object)
+    {
+        public DisplayFor Type { get; set; } = Type;
+
+        // Gun for GUN Type, MagazineState for MAG Type
+        public object Object { get; set; } = Object;
+
+        public enum DisplayFor
+        {
+            GUN,
+            MAG
         }
     }
 }

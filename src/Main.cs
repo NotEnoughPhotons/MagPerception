@@ -11,6 +11,9 @@ using NEP.MagPerception.UI;
 using System.IO;
 using MelonLoader.Utils;
 using MelonLoader.Preferences;
+using Il2CppSLZ.Marrow;
+using System.Collections.Generic;
+using Il2CppSLZ.Marrow.Data;
 
 namespace NEP.MagPerception
 {
@@ -38,10 +41,7 @@ namespace NEP.MagPerception
             Resources = HelperMethods.LoadEmbeddedAssetBundle(assembly, bundlePath + targetBundle);
 
             if (Resources == null)
-            {
-                throw new System.Exception(
-                    "Resources file is missing/invalid!");
-            }
+                throw new System.Exception("Resources file is missing/invalid!");
 
             SetupPreferences();
             SetupBonemenu();
@@ -65,6 +65,7 @@ namespace NEP.MagPerception
             var mainCategory = nepCategory.CreatePage("MagPerception", Color.white);
             var offsetCategory = mainCategory.CreatePage("Offset", Color.white);
 
+            mainCategory.CreateFloat("Text Opacity", Color.white, Settings.Instance.TextOpacity, 0.05f, 0.05f, 1, (value) => Settings.Instance.TextOpacity = value);
             mainCategory.CreateFloat("Scale", Color.white, Settings.Instance.InfoScale, 0.25f, 0.25f, 1.5f, (value) => Settings.Instance.InfoScale = value);
             mainCategory.CreateEnum("Show Type", Color.white, Settings.Instance.ShowType, (showType) => Settings.Instance.ShowType = (UIShowType)showType);
             mainCategory.CreateFloat("Time Until Hidden", Color.white, Settings.Instance.TimeUntilHidden, 0.5f, 0f, 10f, (value) => Settings.Instance.TimeUntilHidden = value);
@@ -87,34 +88,77 @@ namespace NEP.MagPerception
             return objects.FirstOrDefault((asset) => asset.name == name);
         }
 
-        bool pressedDown = false;
+        void MagUpdate()
+        {
+            var mag = Hooks.OnMagAttached.CurrentMagazine;
+            var hand = Hooks.OnMagAttached.HoldingHand;
+
+            var magUI = MagPerceptionManager.Instance?.MagazineUI;
+
+            if (hand != null)
+            {
+                if (IsPressed(hand))
+                {
+                    if (mag != null && magUI?.IsShown != true)
+                        MagPerceptionManager.Instance?.OnMagazineAttached(mag);
+                }
+            }
+        }
+
+        readonly List<Hand> _holding = [];
+
+        private bool IsPressed(Hand hand)
+        {
+            if (hand.Controller == null)
+                return false;
+
+            if (!hand.Controller.GetMenuButtonDown())
+            {
+                _holding.Remove(hand);
+            }
+            else
+            {
+                if (!_holding.Contains(hand))
+                {
+                    _holding.Add(hand);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        int lastRounds = 0;
+        int lastMaxRounds = 0;
 
         public override void OnUpdate()
         {
             base.OnUpdate();
 
-            var mag = Hooks.OnMagAttached.CurrentMagazine;
-            var hand = Hooks.OnMagAttached.HoldingHand;
+            var magUI = MagPerceptionManager.Instance?.MagazineUI;
 
-            if (hand != null)
+            if (magUI?.fadeOut == true && magUI.IsShown)
+                magUI.FadeOut();
+
+            if (magUI?.DisplayInfo?.Type == DisplayInfo.DisplayFor.GUN)
             {
-                if (hand.Controller == null)
-                    return;
+                var gun = magUI?.DisplayInfo?.Object as Gun;
 
-                if (!hand.Controller.GetMenuButtonDown())
+                if (gun != null && magUI != null)
                 {
-                    pressedDown = false;
-                }
-                else
-                {
-                    if (!pressedDown)
+                    if (gun.MagazineState != null && gun.MagazineState.AmmoCount != lastRounds)
                     {
-                        pressedDown = true;
-                        if (mag != null && !MagPerceptionManager.Instance.MagazineUI.IsShown)
-                            MagPerceptionManager.Instance.OnMagazineAttached(mag);
+                        lastRounds = gun.MagazineState.AmmoCount;
+                        magUI.DisplayGunInfo(gun);
+                    }
+                    else if (gun.defaultMagazine != null && gun.defaultMagazine.rounds != lastMaxRounds)
+                    {
+                        lastMaxRounds = gun.defaultMagazine.rounds;
+                        magUI.DisplayGunInfo(gun);
                     }
                 }
             }
+
+            MagUpdate();
         }
     }
 }

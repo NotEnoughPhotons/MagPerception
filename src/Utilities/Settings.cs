@@ -96,6 +96,23 @@ namespace NEP.MagPerception
             }
         }
 
+        [TomlNonSerialized]
+        private float _textOpacity = 1;
+
+        [TomlProperty("TextOpacity")]
+        public float TextOpacity
+        {
+            get
+            {
+                return _textOpacity;
+            }
+            set
+            {
+                _textOpacity = value;
+                Main.PrefsCategory.SaveToFile(false);
+            }
+        }
+
         public void ChangeXYZOffset(OffsetValue xyz, float value)
         {
             var offset = Offset;

@@ -5,6 +5,7 @@ using NEP.MagPerception.UI;
 using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
 using Il2CppSLZ.Bonelab;
+using System.Collections.Generic;
 
 namespace NEP.MagPerception
 {
@@ -39,13 +40,14 @@ namespace NEP.MagPerception
             magUI.SetActive(false);
         }
 
+        internal readonly List<Grip> LastGunGrips = [];
+
         /// <summary>
         /// Called when a player grabs a magazine.
         /// </summary>
         public void OnMagazineAttached(Magazine magazine)
         {
             LastMag = magazine;
-            MagazineUI.Show();
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(LastMag.insertPointTransform);
             MagazineUI.DisplayMagInfo(magazine.magazineState);
@@ -60,11 +62,10 @@ namespace NEP.MagPerception
                 return;
 
             LastMag = null;
-            MagazineUI.Hide();
-            MagazineUI.OnMagEvent();
 
             if (LastGun != null)
             {
+                MagazineUI.OnMagEvent();
                 MagazineUI.UpdateParent(LastGun.firePointTransform);
                 MagazineUI.DisplayGunInfo(LastGun);
             }
@@ -84,7 +85,6 @@ namespace NEP.MagPerception
             if (!Settings.Instance.ShowWithGun)
                 return;
 
-            MagazineUI.Show();
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(LastGun.firePointTransform);
             MagazineUI.DisplayGunInfo(LastGun);
@@ -98,7 +98,6 @@ namespace NEP.MagPerception
             if (!Settings.Instance.ShowWithGun)
                 return;
 
-            MagazineUI.Show();
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(LastGun.firePointTransform);
             MagazineUI.DisplayGunInfo(LastGun);
@@ -119,22 +118,27 @@ namespace NEP.MagPerception
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(gun.firePointTransform);
             MagazineUI.DisplayGunInfo(gun);
-            MagazineUI.Show();
         }
 
         /// <summary>
         /// Called when a player lets go of a gun.
         /// </summary>
-        public void OnGunDetached()
+        public void OnGunDetached(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
                 return;
 
+            if (LastGunGrips.Count > 0)
+                return;
+
+            if (LastGun != gun)
+                return;
+
             LastGun = null;
-            MagazineUI.OnMagEvent();
 
             if (LastMag != null)
             {
+                MagazineUI.OnMagEvent();
                 MagazineUI.UpdateParent(LastMag.insertPointTransform);
                 MagazineUI.DisplayMagInfo(LastMag.magazineState);
             }
@@ -147,9 +151,12 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a round (spent or unspent) is ejected from the chamber.
         /// </summary>
-        public void OnGunEjectRound()
+        public void OnGunEjectRound(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
+                return;
+
+            if (LastGun != gun)
                 return;
 
             MagazineUI.OnMagEvent();
