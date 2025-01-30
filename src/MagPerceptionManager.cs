@@ -4,16 +4,13 @@ using NEP.MagPerception.UI;
 
 using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
+using Il2CppSLZ.Bonelab;
 
 namespace NEP.MagPerception
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
-    public class MagPerceptionManager : MonoBehaviour
+    public class MagPerceptionManager(System.IntPtr ptr) : MonoBehaviour(ptr)
     {
-        public MagPerceptionManager(System.IntPtr ptr) : base(ptr)
-        {
-        }
-
         public static MagPerceptionManager Instance { get; private set; }
 
         public MagazineUI MagazineUI { get; private set; }
@@ -115,9 +112,13 @@ namespace NEP.MagPerception
             if (!Settings.Instance.ShowWithGun)
                 return;
 
+            if (gun.GetComponent<SpawnGun>() != null)
+                return;
+
             LastGun = gun;
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(gun.firePointTransform);
+            MagazineUI.DisplayGunInfo(gun);
             MagazineUI.Show();
         }
 
