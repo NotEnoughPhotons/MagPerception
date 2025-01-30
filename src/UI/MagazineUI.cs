@@ -6,12 +6,8 @@ using Il2CppTMPro;
 namespace NEP.MagPerception.UI
 {
     [MelonLoader.RegisterTypeInIl2Cpp]
-    public class MagazineUI : MonoBehaviour
+    public class MagazineUI(System.IntPtr ptr) : MonoBehaviour(ptr)
     {
-        public MagazineUI(System.IntPtr ptr) : base(ptr)
-        {
-        }
-
         public TextMeshProUGUI AmmoCounterText { get; internal set; }
         public TextMeshProUGUI AmmoInventoryText { get; internal set; }
         public TextMeshProUGUI AmmoTypeText { get; internal set; }
@@ -25,6 +21,8 @@ namespace NEP.MagPerception.UI
         private const float fadeOutDuration = 0.25f;
 
         private Quaternion lastRotation;
+
+        public bool IsShown => gameObject.active;
 
         private void Awake()
         {
