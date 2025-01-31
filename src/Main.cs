@@ -117,7 +117,7 @@ namespace NEP.MagPerception
             {
                 if (IsPressed(hand))
                 {
-                    if (mag != null && magUI?.IsShown != true)
+                    if (mag != null && magUI != null && magUI?.IsShown != true)
                         MagPerceptionManager.Instance?.OnMagazineAttached(mag);
                 }
             }
