@@ -30,7 +30,7 @@ namespace NEP.MagPerception
         }
 
         [TomlNonSerialized]
-        private Vector3 _offset = new(0.075f, 0f, 0f);
+        private Vector3 _offset = new(0f, 0.1f, 0f);
 
         [TomlProperty("Offset")]
         public Vector3 Offset
@@ -47,7 +47,7 @@ namespace NEP.MagPerception
         }
 
         [TomlNonSerialized]
-        private float _timeUntilHidden = 1.5f;
+        private float _timeUntilHidden = 3f;
 
         [TomlProperty("TimeUntilHidden")]
         public float TimeUntilHidden
@@ -83,7 +83,7 @@ namespace NEP.MagPerception
         }
 
         [TomlNonSerialized]
-        private bool _showWithGun = false;
+        private bool _showWithGun = true;
 
         [TomlProperty("ShowWithGun")]
         public bool ShowWithGun
