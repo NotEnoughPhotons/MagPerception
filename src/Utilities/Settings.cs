@@ -76,6 +76,8 @@ namespace NEP.MagPerception
             set
             {
                 _showType = value;
+                if (MagPerceptionManager.Instance?.LastGun != null || MagPerceptionManager.Instance?.LastMag != null)
+                    MagPerceptionManager.Instance?.MagazineUI?.OnMagEvent();
                 Main.PrefsCategory.SaveToFile(false);
             }
         }
