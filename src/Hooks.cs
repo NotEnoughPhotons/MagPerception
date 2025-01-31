@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 using Il2CppSLZ.Marrow;
 
@@ -36,7 +34,7 @@ namespace NEP.MagPerception
 
             public static void Postfix(Hand hand, Magazine __instance)
             {
-                if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsMagazineMine() == false)
+                if (hand?.IsPartOfLocalPlayer() == false)
                     return;
 
                 MagPerceptionManager.Instance.OnMagazineAttached(__instance);
@@ -52,7 +50,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Hand hand, Gun __instance)
             {
-                if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsGunMine() == false)
+                if (hand?.IsPartOfLocalPlayer() == false)
                     return;
 
                 MagPerceptionManager.Instance.LastGunGrips.Add(__instance.triggerGrip);
@@ -70,7 +68,7 @@ namespace NEP.MagPerception
 
                 var gun = __instance?.GetComponentInParent<Gun>();
 
-                if (gun == null || gun?.IsGunMine() != true)
+                if (gun == null)
                     return;
 
                 if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
@@ -91,7 +89,7 @@ namespace NEP.MagPerception
 
                 var gun = __instance?.GetComponentInParent<Gun>();
 
-                if (gun == null || gun?.IsGunMine() != true)
+                if (gun == null)
                     return;
 
                 if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
@@ -110,7 +108,7 @@ namespace NEP.MagPerception
                 if (__instance == null)
                     return;
 
-                if (hand?.IsPartOfLocalPlayer() == false || __instance?.IsGunMine() == false)
+                if (hand?.IsPartOfLocalPlayer() == false)
                     return;
 
                 MagPerceptionManager.Instance.LastGunGrips.Remove(__instance.triggerGrip);
@@ -123,7 +121,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
-                if (__instance?.IsGunMine() == false)
+                if (MagPerceptionManager.Instance.LastGun != __instance)
                     return;
 
                 MagPerceptionManager.Instance.OnGunEjectRound(__instance);
@@ -135,7 +133,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
-                if (__instance?.IsGunMine() == false)
+                if (MagPerceptionManager.Instance.LastGun != __instance)
                     return;
 
                 MagPerceptionManager.Instance.OnMagazineInserted(__instance);
@@ -147,10 +145,10 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
-                if (__instance?.IsGunMine() == false)
+                if (MagPerceptionManager.Instance.LastGun != __instance)
                     return;
 
-                MagPerceptionManager.Instance.OnMagazineInserted(__instance);
+                MagPerceptionManager.Instance.OnMagazineEjected();
             }
         }
     }
