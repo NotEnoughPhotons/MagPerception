@@ -41,13 +41,22 @@ namespace NEP.MagPerception.UI
             transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);
 
             if (AmmoCounterText != null)
+            {
+                AmmoCounterText.faceColor = Settings.Instance.TextColor;
                 AmmoCounterText.alpha = Settings.Instance.TextOpacity;
+            }
 
             if (AmmoTypeText != null)
+            {
+                AmmoTypeText.faceColor = Settings.Instance.TextColor;
                 AmmoTypeText.alpha = Settings.Instance.TextOpacity;
+            }
 
             if (AmmoInventoryText != null)
+            {
+                AmmoInventoryText.faceColor = Settings.Instance.TextColor;
                 AmmoInventoryText.alpha = Settings.Instance.TextOpacity;
+            }
 
             UIShowType showType = Settings.Instance.ShowType;
 
@@ -123,11 +132,15 @@ namespace NEP.MagPerception.UI
                 return;
             }
 
-            bool toppedOff = gun.chamberedCartridge != null && magazineState.AmmoCount == magazineState.magazineData.rounds;
+            bool inChamber = gun.chamberedCartridge != null;
+            bool toppedOff = inChamber && magazineState.AmmoCount == magazineState.magazineData.rounds;
 
             int ammoCount = magazineState.AmmoCount;
             int maxAmmo = magazineState.magazineData.rounds;
             string ammoType = magazineState.magazineData.platform;
+
+            if (inChamber && !toppedOff)
+                ammoCount++;
 
             CartridgeData = magazineState.cartridgeData;
 
@@ -183,12 +196,9 @@ namespace NEP.MagPerception.UI
         public void FadeIn()
         {
             timeSinceLastEvent = 0.0f;
-            if (!IsShown)
-            {
-                Show();
-                Animator?.Play("mag_enter_01");
-                fadeOut = false;
-            }
+            Show();
+            Animator?.Play("mag_enter_01");
+            fadeOut = false;
         }
 
         public void FadeOut()
@@ -213,10 +223,10 @@ namespace NEP.MagPerception.UI
 
     public class DisplayInfo(DisplayInfo.DisplayFor Type, object Object)
     {
-        public DisplayFor Type { get; set; } = Type;
+        public DisplayFor Type { get; } = Type;
 
         // Gun for GUN Type, MagazineState for MAG Type
-        public object Object { get; set; } = Object;
+        public object Object { get; } = Object;
 
         public enum DisplayFor
         {
