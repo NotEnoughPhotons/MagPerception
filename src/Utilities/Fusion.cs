@@ -1,6 +1,4 @@
-﻿using BoneLib;
-
-using Il2CppSLZ.Marrow;
+﻿using Il2CppSLZ.Marrow;
 
 using UnityEngine;
 
@@ -11,7 +9,7 @@ namespace NEP.MagPerception
     /// </summary>
     public static class Fusion
     {
-        public static bool HasFusion => HelperMethods.CheckIfAssemblyLoaded("labfusion");
+        public static bool HasFusion => Main.IsAssemblyLoaded("LabFusion");
 
         private static bool Internal_IsConnected()
         {
