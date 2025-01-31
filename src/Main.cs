@@ -4,16 +4,14 @@ using MelonLoader;
 
 using UnityEngine;
 
-using BoneLib;
-using BoneLib.BoneMenu;
-
 using NEP.MagPerception.UI;
 using System.IO;
 using MelonLoader.Utils;
 using MelonLoader.Preferences;
 using Il2CppSLZ.Marrow;
 using System.Collections.Generic;
-using Il2CppSLZ.Marrow.Data;
+using System;
+using Object = UnityEngine.Object;
 
 namespace NEP.MagPerception
 {
@@ -32,13 +30,27 @@ namespace NEP.MagPerception
 
         internal static MelonPreferences_ReflectiveCategory PrefsCategory { get; private set; }
 
+        public static bool IsAssemblyLoaded(string name) => AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName() != null && string.Equals(x.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
+
         public override void OnInitializeMelon()
+        {
+            if (!IsAssemblyLoaded("BoneLib"))
+            {
+                LoggerInstance.Error("BoneLib is required for this mod to work");
+            }
+            else
+            {
+                OnInitialize();
+            }
+        }
+
+        private static void OnInitialize()
         {
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             const string bundlePath = "NEP.MagPerception.Resources.";
-            string targetBundle = HelperMethods.IsAndroid() ? "mp_resources_quest.pack" : "mp_resources_pcvr.pack";
+            string targetBundle = BoneLib.HelperMethods.IsAndroid() ? "mp_resources_quest.pack" : "mp_resources_pcvr.pack";
 
-            Resources = HelperMethods.LoadEmbeddedAssetBundle(assembly, bundlePath + targetBundle);
+            Resources = BoneLib.HelperMethods.LoadEmbeddedAssetBundle(assembly, bundlePath + targetBundle);
 
             if (Resources == null)
                 throw new System.Exception("Resources file is missing/invalid!");
@@ -46,7 +58,7 @@ namespace NEP.MagPerception
             SetupPreferences();
             SetupBonemenu();
 
-            Hooking.OnLevelLoaded += OnSceneWasLoaded;
+            BoneLib.Hooking.OnLevelLoaded += (_) => OnSceneWasLoaded();
         }
 
         private static void SetupPreferences()
@@ -61,9 +73,10 @@ namespace NEP.MagPerception
 
         private static void SetupBonemenu()
         {
-            var nepCategory = Page.Root.CreatePage("Not Enough Photons", Color.white);
+            var nepCategory = BoneLib.BoneMenu.Page.Root.CreatePage("Not Enough Photons", Color.white);
             var mainCategory = nepCategory.CreatePage("MagPerception", Color.white);
             var offsetCategory = mainCategory.CreatePage("Offset", Color.white);
+            var textColorCategory = mainCategory.CreatePage("Text Color", Color.red);
 
             mainCategory.CreateFloat("Text Opacity", Color.white, Settings.Instance.TextOpacity, 0.05f, 0.05f, 1, (value) => Settings.Instance.TextOpacity = value);
             mainCategory.CreateFloat("Scale", Color.white, Settings.Instance.InfoScale, 0.25f, 0.25f, 1.5f, (value) => Settings.Instance.InfoScale = value);
@@ -74,9 +87,14 @@ namespace NEP.MagPerception
             offsetCategory.CreateFloat("X", Color.red, Settings.Instance.Offset.x, 0.025f, -1f, 1f, (value) => Settings.Instance.ChangeXYZOffset(Settings.OffsetValue.X, value));
             offsetCategory.CreateFloat("Y", Color.green, Settings.Instance.Offset.y, 0.025f, -1f, 1f, (value) => Settings.Instance.ChangeXYZOffset(Settings.OffsetValue.Y, value));
             offsetCategory.CreateFloat("Z", Color.blue, Settings.Instance.Offset.z, 0.025f, -1f, 1f, (value) => Settings.Instance.ChangeXYZOffset(Settings.OffsetValue.Z, value));
+
+            Color.RGBToHSV(Settings.Instance.TextColor, out float H, out float S, out float V);
+            textColorCategory.CreateFloat("Hue", Color.red, H, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.H, val));
+            textColorCategory.CreateFloat("Saturation", Color.green, S, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.S, val));
+            textColorCategory.CreateFloat("Value", Color.blue, V, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.V, val));
         }
 
-        public static void OnSceneWasLoaded(LevelInfo info)
+        public static void OnSceneWasLoaded()
         {
             new GameObject("Mag Perception Manager").AddComponent<MagPerceptionManager>();
         }
@@ -127,9 +145,6 @@ namespace NEP.MagPerception
             return false;
         }
 
-        int lastRounds = 0;
-        int lastMaxRounds = 0;
-
         public override void OnUpdate()
         {
             base.OnUpdate();
@@ -139,24 +154,7 @@ namespace NEP.MagPerception
             if (magUI?.fadeOut == true && magUI.IsShown)
                 magUI.FadeOut();
 
-            if (magUI?.DisplayInfo?.Type == DisplayInfo.DisplayFor.GUN)
-            {
-                var gun = magUI?.DisplayInfo?.Object as Gun;
-
-                if (gun != null && magUI != null)
-                {
-                    if (gun.MagazineState != null && gun.MagazineState.AmmoCount != lastRounds)
-                    {
-                        lastRounds = gun.MagazineState.AmmoCount;
-                        magUI.DisplayGunInfo(gun);
-                    }
-                    else if (gun.defaultMagazine != null && gun.defaultMagazine.rounds != lastMaxRounds)
-                    {
-                        lastMaxRounds = gun.defaultMagazine.rounds;
-                        magUI.DisplayGunInfo(gun);
-                    }
-                }
-            }
+            magUI?.UpdateInfo(magUI?.DisplayInfo);
 
             MagUpdate();
         }
