@@ -35,33 +35,5 @@ namespace NEP.MagPerception
             if (IsConnected) return Internal_IsPartOfLocalPlayer(comp);
             else return true;
         }
-
-        private static bool Internal_IsGunMine(this Gun gun)
-        {
-            if (LabFusion.Entities.GunExtender.Cache.TryGet(gun, out LabFusion.Entities.NetworkEntity gunEntity))
-                return gunEntity.IsOwner;
-            else
-                return false;
-        }
-
-        public static bool IsGunMine(this Gun gun)
-        {
-            if (IsConnected) return Internal_IsGunMine(gun);
-            else return true;
-        }
-
-        private static bool Internal_IsMagazineMine(this Magazine magazine)
-        {
-            if (LabFusion.Entities.MagazineExtender.Cache.TryGet(magazine, out LabFusion.Entities.NetworkEntity magazineEntity))
-                return magazineEntity.IsOwner;
-            else
-                return false;
-        }
-
-        public static bool IsMagazineMine(this Magazine magazine)
-        {
-            if (IsConnected) return Internal_IsMagazineMine(magazine);
-            else return true;
-        }
     }
 }
