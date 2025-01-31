@@ -139,7 +139,7 @@ namespace NEP.MagPerception.UI
             int maxAmmo = magazineState.magazineData.rounds;
             string ammoType = magazineState.magazineData.platform;
 
-            if (inChamber && !toppedOff)
+            if (inChamber && !toppedOff && gun.cartridgeState != Gun.CartridgeStates.SPENT)
                 ammoCount++;
 
             CartridgeData = magazineState.cartridgeData;
