@@ -37,7 +37,7 @@ namespace NEP.MagPerception
                 if (hand?.IsPartOfLocalPlayer() == false)
                     return;
 
-                MagPerceptionManager.Instance.OnMagazineAttached(__instance);
+                MagPerceptionManager.Instance?.OnMagazineAttached(__instance);
                 CurrentMagazine = __instance;
                 HoldingHand = hand;
                 HandDelegate = (Grip.HandDelegate)Detached;
@@ -53,8 +53,8 @@ namespace NEP.MagPerception
                 if (hand?.IsPartOfLocalPlayer() == false)
                     return;
 
-                MagPerceptionManager.Instance.LastGunGrips.Add(__instance.triggerGrip);
-                MagPerceptionManager.Instance.OnGunAttached(__instance);
+                MagPerceptionManager.Instance?.LastGunGrips?.Add(__instance.triggerGrip);
+                MagPerceptionManager.Instance?.OnGunAttached(__instance);
             }
         }
 
@@ -74,8 +74,8 @@ namespace NEP.MagPerception
                 if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
                     return;
 
-                MagPerceptionManager.Instance.LastGunGrips.Add(__instance);
-                MagPerceptionManager.Instance.OnGunAttached(gun);
+                MagPerceptionManager.Instance?.LastGunGrips?.Add(__instance);
+                MagPerceptionManager.Instance?.OnGunAttached(gun);
             }
         }
 
@@ -95,8 +95,8 @@ namespace NEP.MagPerception
                 if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
                     return;
 
-                MagPerceptionManager.Instance.LastGunGrips.Remove(__instance);
-                MagPerceptionManager.Instance.OnGunDetached(gun);
+                MagPerceptionManager.Instance?.LastGunGrips?.Remove(__instance);
+                MagPerceptionManager.Instance?.OnGunDetached(gun);
             }
         }
 
@@ -111,44 +111,48 @@ namespace NEP.MagPerception
                 if (hand?.IsPartOfLocalPlayer() == false)
                     return;
 
-                MagPerceptionManager.Instance.LastGunGrips.Remove(__instance.triggerGrip);
-                MagPerceptionManager.Instance.OnGunDetached(__instance);
+                MagPerceptionManager.Instance?.LastGunGrips?.Remove(__instance.triggerGrip);
+                MagPerceptionManager.Instance?.OnGunDetached(__instance);
             }
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.EjectCartridge))]
         public static class OnGunEjectRound
         {
-            public static void Postfix(Gun __instance)
-            {
-                if (MagPerceptionManager.Instance.LastGun != __instance)
-                    return;
-
-                MagPerceptionManager.Instance.OnGunEjectRound(__instance);
-            }
+            public static void Postfix(Gun __instance) =>
+                MagPerceptionManager.Instance?.OnGunEjectRound(__instance);
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnMagazineInserted))]
         public static class OnMagazineInserted
         {
-            public static void Postfix(Gun __instance)
-            {
-                if (MagPerceptionManager.Instance.LastGun != __instance)
-                    return;
-
-                MagPerceptionManager.Instance.OnMagazineInserted(__instance);
-            }
+            public static void Postfix(Gun __instance) =>
+                MagPerceptionManager.Instance?.OnMagazineInserted(__instance);
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnMagazineRemoved))]
         public static class OnMagazineRemoved
         {
-            public static void Postfix(Gun __instance)
+            public static void Postfix(Gun __instance) =>
+                MagPerceptionManager.Instance?.OnMagazineEjected(__instance);
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(InventorySlotReceiver), nameof(InventorySlotReceiver.InsertInSlot))]
+        public static class OnHolsteredGun
+        {
+            public static void Postfix(InventorySlotReceiver __instance, InteractableHost host)
             {
-                if (MagPerceptionManager.Instance.LastGun != __instance)
+                if (__instance == null)
                     return;
 
-                MagPerceptionManager.Instance.OnMagazineEjected();
+                if (!__instance.IsPartOfLocalPlayer())
+                    return;
+
+                var gun = host.GetComponent<Gun>();
+                if (gun == null)
+                    return;
+
+                MagPerceptionManager.Instance?.OnGunHolstered(gun);
             }
         }
     }

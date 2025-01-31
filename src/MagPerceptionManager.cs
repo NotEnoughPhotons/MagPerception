@@ -80,9 +80,10 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnMagazineInserted(Gun gun)
         {
-            LastGun = gun;
-
             if (!Settings.Instance.ShowWithGun)
+                return;
+
+            if (LastGun != gun)
                 return;
 
             MagazineUI.OnMagEvent();
@@ -93,9 +94,12 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when the player ejects the magazine from their gun.
         /// </summary>
-        public void OnMagazineEjected()
+        public void OnMagazineEjected(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
+                return;
+
+            if (LastGun != gun)
                 return;
 
             MagazineUI.OnMagEvent();
@@ -162,6 +166,32 @@ namespace NEP.MagPerception
             MagazineUI.OnMagEvent();
             MagazineUI.UpdateParent(LastGun.firePointTransform);
             MagazineUI.DisplayGunInfo(LastGun);
+        }
+
+        /// <summary>
+        /// Called when a gun gets holstered
+        /// </summary>
+        public void OnGunHolstered(Gun gun)
+        {
+            if (!Settings.Instance.ShowWithGun)
+                return;
+
+            if (LastGun != gun)
+                return;
+
+            LastGun = null;
+            LastGunGrips.Clear();
+
+            if (LastMag != null)
+            {
+                MagazineUI.OnMagEvent();
+                MagazineUI.UpdateParent(LastMag.insertPointTransform);
+                MagazineUI.DisplayMagInfo(LastMag.magazineState);
+            }
+            else
+            {
+                MagazineUI.FadeOut();
+            }
         }
     }
 }
