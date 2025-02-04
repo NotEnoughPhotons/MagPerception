@@ -28,7 +28,7 @@ namespace NEP.MagPerception
             Instance = this;
         }
 
-        private MagazineUI AddMagazineUI(object gunOrMag)
+        private MagazineUI AddMagazineUI(object gunOrMag, Vector3 startPosition, bool addOffset = true)
         {
             if (gunOrMag.GetType() != typeof(Magazine) && gunOrMag.GetType() != typeof(Gun))
                 return null;
@@ -39,6 +39,7 @@ namespace NEP.MagPerception
             GameObject magUI = GameObject.Instantiate(Main.Resources.LoadAsset("MagazineLayer").Cast<GameObject>(), transform);
 
             magUI.transform.SetParent(transform);
+            magUI.transform.localPosition = !addOffset ? startPosition : (startPosition + Settings.Instance?.Offset ?? Vector3.zero);
             MagazineUI MagazineUI = magUI.AddComponent<MagazineUI>();
 
             MagazineUI.AmmoCounterText = magUI.transform.Find("AmmoCounter").GetComponent<TextMeshProUGUI>();
@@ -74,7 +75,7 @@ namespace NEP.MagPerception
 
             LastMags.Add(magazine);
 
-            var magazineUI = AddMagazineUI(magazine);
+            var magazineUI = AddMagazineUI(magazine, magazine.insertPointTransform.position);
             if (magazineUI == null)
                 return;
 
@@ -112,7 +113,7 @@ namespace NEP.MagPerception
             if (!LastGuns.Contains(gun))
                 return;
 
-            var magazineUI = AddMagazineUI(gun);
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
             if (magazineUI == null)
                 return;
 
@@ -132,7 +133,7 @@ namespace NEP.MagPerception
             if (!LastGuns.Contains(gun))
                 return;
 
-            var magazineUI = AddMagazineUI(gun);
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
             if (magazineUI == null)
                 return;
 
@@ -157,7 +158,7 @@ namespace NEP.MagPerception
 
             LastGuns.Add(gun);
 
-            var magazineUI = AddMagazineUI(gun);
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
             if (magazineUI == null)
                 return;
 
@@ -198,7 +199,7 @@ namespace NEP.MagPerception
             if (!LastGuns.Contains(gun))
                 return;
 
-            var magazineUI = AddMagazineUI(gun);
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
             if (magazineUI == null)
                 return;
 
