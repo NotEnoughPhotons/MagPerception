@@ -116,7 +116,7 @@ namespace NEP.MagPerception
         }
 
         [TomlProperty("TextOpacity")]
-        private float _textOpacity { get; set; } = 1;
+        private float _textOpacity { get; set; } = 0.5f;
 
         [TomlNonSerialized]
         public float TextOpacity
