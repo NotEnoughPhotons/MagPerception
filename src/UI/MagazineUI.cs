@@ -28,7 +28,7 @@ namespace NEP.MagPerception.UI
 
         public DisplayInfo DisplayInfo { get; private set; } = null;
 
-        public bool IsShown => isActiveAndEnabled;
+        public bool IsShown => gameObject != null && gameObject.active;
 
         private void Awake()
         {
@@ -66,12 +66,7 @@ namespace NEP.MagPerception.UI
             if (DisplayInfo != null)
                 UpdateInfo(DisplayInfo);
 
-            if (showType == UIShowType.Always)
-            {
-                Show();
-                return;
-            }
-            else if (showType == UIShowType.FadeShow)
+            if (showType == UIShowType.FadeShow)
             {
                 timeSinceLastEvent += Time.deltaTime;
 
@@ -99,20 +94,19 @@ namespace NEP.MagPerception.UI
 
             if (showType == UIShowType.Always)
             {
-                if (!IsShown)
+                if (!IsShown || fadeOut)
                     FadeIn();
             }
             else if (showType == UIShowType.FadeShow)
             {
-                FadeIn();
+                if (!IsShown || fadeOut)
+                    FadeIn();
             }
             else if (showType == UIShowType.Hide)
             {
                 Hide();
             }
         }
-
-        public CartridgeData CartridgeData { get; private set; } = null;
 
         public void DisplayGunInfo(Gun gun)
         {
@@ -161,8 +155,6 @@ namespace NEP.MagPerception.UI
             if (inChamber && !toppedOff && gun.cartridgeState != Gun.CartridgeStates.SPENT)
                 ammoCount++;
 
-            CartridgeData = magazineState.cartridgeData;
-
             var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
 
             counterText = toppedOff ? $"{ammoCount}+1/{maxAmmo}" : $"{ammoCount}/{maxAmmo}";
@@ -187,8 +179,6 @@ namespace NEP.MagPerception.UI
             int ammoCount = magazineState.AmmoCount;
             int maxAmmo = magazineState.magazineData.rounds;
             string ammoType = magazineState.magazineData.platform;
-
-            CartridgeData = magazineState.cartridgeData;
 
             var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
 
@@ -222,9 +212,9 @@ namespace NEP.MagPerception.UI
         public void FadeIn()
         {
             timeSinceLastEvent = 0.0f;
+            fadeOut = false;
             Show();
             Animator?.Play("mag_enter_01");
-            fadeOut = false;
         }
 
         public void FadeOut()

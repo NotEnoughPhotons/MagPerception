@@ -177,6 +177,8 @@ namespace NEP.MagPerception
 
                     if (magUI.fadeOut && magUI.IsShown)
                         magUI.FadeOut();
+                    else if (!magUI.IsShown)
+                        magUI.fadeOut = false;
                 }
 
                 if (Player.HandsExist)
