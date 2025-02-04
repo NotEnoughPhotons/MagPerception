@@ -5,6 +5,7 @@ using UnityEngine;
 using Tomlet.Attributes;
 using System.Drawing;
 using BoneLib.BoneMenu;
+using System.Collections.Generic;
 
 namespace NEP.MagPerception
 {
@@ -13,10 +14,10 @@ namespace NEP.MagPerception
         [TomlNonSerialized]
         public static Settings Instance { get; internal set; }
 
-        [TomlNonSerialized]
-        private float _infoScale = 0.75f;
-
         [TomlProperty("InfoScale")]
+        private float _infoScale { get; set; } = 0.75f;
+
+        [TomlNonSerialized]
         public float InfoScale
         {
             get
@@ -30,10 +31,10 @@ namespace NEP.MagPerception
             }
         }
 
-        [TomlNonSerialized]
-        private Vector3 _offset = new(0.075f, 0f, 0f);
-
         [TomlProperty("Offset")]
+        private Vector3 _offset { get; set; } = new(0.075f, 0f, 0f);
+
+        [TomlNonSerialized]
         public Vector3 Offset
         {
             get
@@ -47,10 +48,10 @@ namespace NEP.MagPerception
             }
         }
 
-        [TomlNonSerialized]
-        private float _timeUntilHidden = 3f;
-
         [TomlProperty("TimeUntilHidden")]
+        private float _timeUntilHidden { get; set; } = 3f;
+
+        [TomlNonSerialized]
         public float TimeUntilHidden
         {
             get
@@ -64,10 +65,10 @@ namespace NEP.MagPerception
             }
         }
 
-        [TomlNonSerialized]
-        private UIShowType _showType = UIShowType.FadeShow;
-
         [TomlProperty("ShowType")]
+        private UIShowType _showType { get; set; } = UIShowType.FadeShow;
+
+        [TomlNonSerialized]
         public UIShowType ShowType
         {
             get
@@ -78,13 +79,29 @@ namespace NEP.MagPerception
             {
                 _showType = value;
                 Main.PrefsCategory.SaveToFile(false);
+
+                if (MagPerceptionManager.Instance?.LastGuns?.Count > 0 || MagPerceptionManager.Instance?.LastMags?.Count > 0)
+                {
+                    List<MagazineUI> UIs = [];
+                    MagPerceptionManager.Instance.LastGuns.ForEach(x =>
+                    {
+                        if (x != null && MagPerceptionManager.Instance.MagazineUIs.ContainsKey(x))
+                            UIs.Add(MagPerceptionManager.Instance.MagazineUIs[x]);
+                    });
+                    MagPerceptionManager.Instance.LastMags.ForEach(x =>
+                    {
+                        if (x != null && MagPerceptionManager.Instance.MagazineUIs.ContainsKey(x))
+                            UIs.Add(MagPerceptionManager.Instance.MagazineUIs[x]);
+                    });
+                    UIs.ForEach(x => x.OnMagEvent());
+                }
             }
         }
 
-        [TomlNonSerialized]
-        private bool _showWithGun = true;
-
         [TomlProperty("ShowWithGun")]
+        private bool _showWithGun { get; set; } = true;
+
+        [TomlNonSerialized]
         public bool ShowWithGun
         {
             get
@@ -98,10 +115,10 @@ namespace NEP.MagPerception
             }
         }
 
-        [TomlNonSerialized]
-        private float _textOpacity = 1;
-
         [TomlProperty("TextOpacity")]
+        private float _textOpacity { get; set; } = 1;
+
+        [TomlNonSerialized]
         public float TextOpacity
         {
             get
@@ -129,10 +146,10 @@ namespace NEP.MagPerception
             }
         }
 
-        [TomlNonSerialized]
-        private string _textColorHEX = "#FFFFFF";
-
         [TomlProperty("TextColor")]
+        private string _textColorHEX { get; set; } = "#FFFFFF";
+
+        [TomlNonSerialized]
         public string TextColorHEX
         {
             get => _textColorHEX;
