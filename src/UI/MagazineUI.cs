@@ -174,7 +174,12 @@ namespace NEP.MagPerception.UI
             DisplayInfo = new DisplayInfo(DisplayInfo.DisplayFor.MAG, magazine);
             var magazineState = magazine?.magazineState;
             if (magazineState == null)
+            {
+                AmmoCounterText.text = "0/0";
+                AmmoInventoryText.text = "RESERVE: None";
+                AmmoTypeText.text = "Unknown";
                 return;
+            }
 
             int ammoCount = magazineState.AmmoCount;
             int maxAmmo = magazineState.magazineData.rounds;
