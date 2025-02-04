@@ -6,7 +6,6 @@ using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
 using Il2CppSLZ.Bonelab;
 using System.Collections.Generic;
-using MelonLoader;
 
 namespace NEP.MagPerception
 {
@@ -93,9 +92,6 @@ namespace NEP.MagPerception
                 return;
 
             var magUI = GetMagazineUI(magazine);
-
-            if (magUI == null)
-                MelonLogger.Msg("Mag UI is null");
 
             LastMags.Remove(magazine);
 
