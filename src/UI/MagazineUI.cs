@@ -128,10 +128,23 @@ namespace NEP.MagPerception.UI
             string counterText;
             if (magazineState == null)
             {
-                counterText = gun.chamberedCartridge != null ? "+1/0" : "0/0";
-                AmmoCounterText.text = counterText;
-                AmmoInventoryText.text = "RESERVE: None";
-                AmmoTypeText.text = "Unknown";
+                if (gun.defaultMagazine != null && gun.defaultCartridge != null)
+                {
+                    counterText = gun.chamberedCartridge != null ? $"+1/{gun.defaultMagazine.rounds}" : $"0/{gun.defaultMagazine.rounds}";
+                    AmmoCounterText.text = counterText;
+
+                    int reserve = AmmoInventory.Instance.GetCartridgeCount(gun.defaultCartridge);
+
+                    AmmoInventoryText.text = $"RESERVE: {reserve}";
+                    AmmoTypeText.text = !string.IsNullOrWhiteSpace(gun.defaultMagazine.platform) ? gun.defaultMagazine.platform : "Unknown";
+                }
+                else
+                {
+                    counterText = gun.chamberedCartridge != null ? "+1/0" : "0/0";
+                    AmmoCounterText.text = counterText;
+                    AmmoInventoryText.text = "RESERVE: None";
+                    AmmoTypeText.text = "Unknown";
+                }
                 return;
             }
 
