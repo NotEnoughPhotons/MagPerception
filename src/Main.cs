@@ -12,6 +12,7 @@ using Il2CppSLZ.Marrow;
 using System.Collections.Generic;
 using System;
 using Object = UnityEngine.Object;
+using BoneLib;
 
 namespace NEP.MagPerception
 {
@@ -89,9 +90,12 @@ namespace NEP.MagPerception
             offsetCategory.CreateFloat("Z", Color.blue, Settings.Instance.Offset.z, 0.025f, -1f, 1f, (value) => Settings.Instance.ChangeXYZOffset(Settings.OffsetValue.Z, value));
 
             Color.RGBToHSV(Settings.Instance.TextColor, out float H, out float S, out float V);
-            textColorCategory.CreateFloat("Hue", Color.red, H, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.H, val));
-            textColorCategory.CreateFloat("Saturation", Color.green, S, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.S, val));
-            textColorCategory.CreateFloat("Value", Color.blue, V, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.V, val));
+
+            var preview = textColorCategory.CreateFunction("This is a preview", Settings.Instance.TextColor, null);
+
+            textColorCategory.CreateFloat("Hue", Color.red, H, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.H, preview, val));
+            textColorCategory.CreateFloat("Saturation", Color.green, S, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.S, preview, val));
+            textColorCategory.CreateFloat("Value", Color.blue, V, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.V, preview, val));
         }
 
         public static void OnSceneWasLoaded()
@@ -106,19 +110,32 @@ namespace NEP.MagPerception
             return objects.FirstOrDefault((asset) => asset.name == name);
         }
 
-        void MagUpdate()
+        void MagUpdate(Hand hand)
         {
-            var mag = Hooks.OnMagAttached.CurrentMagazine;
-            var hand = Hooks.OnMagAttached.HoldingHand;
+            if (MagPerceptionManager.Instance == null)
+                return;
 
-            var magUI = MagPerceptionManager.Instance?.MagazineUI;
+            if (!Hooks.OnGripAttached.HoldMagazines.ContainsKey(hand))
+                return;
 
-            if (hand != null)
+            var mag = Hooks.OnGripAttached.HoldMagazines[hand];
+            if (mag == null)
+                return;
+
+            foreach (var ui in MagPerceptionManager.Instance.MagazineUIs)
             {
-                if (IsPressed(hand))
+                if (ui.Key != (object)mag)
+                    continue;
+
+                var magUI = ui.Value;
+
+                if (hand != null)
                 {
-                    if (mag != null && magUI != null && magUI?.IsShown != true)
-                        MagPerceptionManager.Instance?.OnMagazineAttached(mag);
+                    if (IsPressed(hand))
+                    {
+                        if (mag != null && magUI != null && magUI?.IsShown != true)
+                            MagPerceptionManager.Instance?.OnMagazineAttached(mag);
+                    }
                 }
             }
         }
@@ -149,14 +166,24 @@ namespace NEP.MagPerception
         {
             base.OnUpdate();
 
-            var magUI = MagPerceptionManager.Instance?.MagazineUI;
+            if (MagPerceptionManager.Instance != null)
+            {
+                foreach (var val in MagPerceptionManager.Instance.MagazineUIs)
+                {
+                    var magUI = val.Value;
 
-            if (magUI?.fadeOut == true && magUI.IsShown)
-                magUI.FadeOut();
+                    if (magUI?.fadeOut == true && magUI.IsShown)
+                        magUI.FadeOut();
 
-            magUI?.UpdateInfo(magUI?.DisplayInfo);
+                    magUI?.UpdateInfo(magUI?.DisplayInfo);
+                }
 
-            MagUpdate();
+                if (Player.HandsExist)
+                {
+                    MagUpdate(Player.LeftHand);
+                    MagUpdate(Player.RightHand);
+                }
+            }
         }
     }
 }

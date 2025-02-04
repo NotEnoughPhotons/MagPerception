@@ -1,118 +1,106 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Il2CppSLZ.Marrow;
+
+using NEP.MagPerception.Helper;
 
 namespace NEP.MagPerception
 {
     public static class Hooks
     {
-        [HarmonyLib.HarmonyPatch(typeof(Magazine), nameof(Magazine.OnGrab))]
-        public static class OnMagAttached
-        {
-            public static Magazine CurrentMagazine { get; private set; } = null;
-
-            public static Hand HoldingHand { get; private set; } = null;
-
-            private readonly static List<Magazine> PatchedMags = [];
-
-            private static Grip.HandDelegate HandDelegate = null;
-
-            public static void Detached(Hand hand)
-            {
-                if (CurrentMagazine == null)
-                    return;
-
-                if (hand?.IsPartOfLocalPlayer() == true)
-                    MagPerceptionManager.Instance.OnMagazineDetached(CurrentMagazine);
-
-                if (HandDelegate != null)
-                    CurrentMagazine.grip.remove_detachedHandDelegate(HandDelegate);
-
-                CurrentMagazine = null;
-                HoldingHand = null;
-            }
-
-            public static void Postfix(Hand hand, Magazine __instance)
-            {
-                if (hand?.IsPartOfLocalPlayer() == false)
-                    return;
-
-                MagPerceptionManager.Instance?.OnMagazineAttached(__instance);
-                CurrentMagazine = __instance;
-                HoldingHand = hand;
-                HandDelegate = (Grip.HandDelegate)Detached;
-                __instance.grip.add_detachedHandDelegate(HandDelegate);
-            }
-        }
-
-        [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnTriggerGripAttached))]
-        public static class OnGunAttached
-        {
-            public static void Postfix(Hand hand, Gun __instance)
-            {
-                if (hand?.IsPartOfLocalPlayer() == false)
-                    return;
-
-                MagPerceptionManager.Instance?.LastGunGrips?.Add(__instance.triggerGrip);
-                MagPerceptionManager.Instance?.OnGunAttached(__instance);
-            }
-        }
-
         [HarmonyLib.HarmonyPatch(typeof(Grip), nameof(Grip.OnAttachedToHand))]
-        public static class OnSlideGripAttached
+        public static class OnGripAttached
         {
+            public static Dictionary<Hand, Magazine> HoldMagazines { get; } = [];
+
             public static void Postfix(Hand hand, Grip __instance)
             {
-                if (hand?.IsPartOfLocalPlayer() == false)
+                if (hand == null || __instance == null)
                     return;
 
-                var gun = __instance?.GetComponentInParent<Gun>();
-
-                if (gun == null)
+                if (!hand.IsPartOfLocalPlayer())
                     return;
 
-                if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
-                    return;
+                var gun = __instance.GetComponentInParent<Gun>();
 
-                MagPerceptionManager.Instance?.LastGunGrips?.Add(__instance);
-                MagPerceptionManager.Instance?.OnGunAttached(gun);
+                if (gun != null)
+                {
+                    if (!gun.GetGrips().Contains(__instance))
+                        return;
+
+                    if (MagPerceptionManager.Instance?.LastGunGrips.ContainsKey(gun) != true)
+                    {
+                        MagPerceptionManager.Instance?.LastGunGrips.Add(gun, [__instance]);
+                    }
+                    else
+                    {
+                        var grips = MagPerceptionManager.Instance.LastGunGrips[gun];
+                        grips.Add(__instance);
+                        MagPerceptionManager.Instance.LastGunGrips[gun] = grips;
+                    }
+                    MagPerceptionManager.Instance?.OnGunAttached(gun);
+                }
+                else
+                {
+                    var mag = __instance.GetComponentInParent<Magazine>();
+                    if (mag != null)
+                    {
+                        if (__instance != mag.grip)
+                            return;
+
+                        MagPerceptionManager.Instance?.OnMagazineAttached(mag);
+                        if (!HoldMagazines.ContainsKey(hand))
+                            HoldMagazines.Add(hand, mag);
+                    }
+                }
             }
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Grip), nameof(Grip.OnDetachedFromHand))]
-        public static class OnSlideGripDetached
+        public static class OnGripDetached
         {
             public static void Postfix(Hand hand, Grip __instance)
             {
-                if (hand?.IsPartOfLocalPlayer() == false)
+                if (hand == null || __instance == null)
                     return;
 
-                var gun = __instance?.GetComponentInParent<Gun>();
-
-                if (gun == null)
+                if (!hand.IsPartOfLocalPlayer())
                     return;
 
-                if (gun.slideVirtualController?.primaryGrips?.Contains(__instance) != true)
-                    return;
+                var gun = __instance.GetComponentInParent<Gun>();
 
-                MagPerceptionManager.Instance?.LastGunGrips?.Remove(__instance);
-                MagPerceptionManager.Instance?.OnGunDetached(gun);
-            }
-        }
+                if (gun != null)
+                {
+                    if (!gun.GetGrips().Contains(__instance))
+                        return;
 
-        [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnTriggerGripDetached))]
-        public static class OnGunDetached
-        {
-            public static void Postfix(Hand hand, Gun __instance)
-            {
-                if (__instance == null)
-                    return;
+                    if (MagPerceptionManager.Instance != null && MagPerceptionManager.Instance.LastGunGrips.TryGetValue(gun, out List<Grip> grips) && grips?.Count == 1)
+                    {
+                        MagPerceptionManager.Instance?.LastGunGrips?.Remove(gun);
+                    }
+                    else
+                    {
+                        var _grips = MagPerceptionManager.Instance.LastGunGrips[gun];
+                        _grips.Remove(__instance);
+                        MagPerceptionManager.Instance.LastGunGrips[gun] = _grips;
+                    }
+                    MagPerceptionManager.Instance?.OnGunDetached(gun);
+                }
+                else
+                {
+                    var mag = __instance.GetComponentInParent<Magazine>();
+                    if (mag != null)
+                    {
+                        if (__instance != mag.grip)
+                            return;
 
-                if (hand?.IsPartOfLocalPlayer() == false)
-                    return;
+                        if (OnGripAttached.HoldMagazines.ContainsKey(hand))
+                            OnGripAttached.HoldMagazines.Remove(hand);
 
-                MagPerceptionManager.Instance?.LastGunGrips?.Remove(__instance.triggerGrip);
-                MagPerceptionManager.Instance?.OnGunDetached(__instance);
+                        MagPerceptionManager.Instance?.OnMagazineDetached(mag);
+                    }
+                }
             }
         }
 

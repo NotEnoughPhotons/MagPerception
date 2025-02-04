@@ -3,6 +3,9 @@
 using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
 using Il2CppSLZ.Marrow.Data;
+using System.Collections.Generic;
+using System;
+using NEP.MagPerception.Helper;
 
 namespace NEP.MagPerception.UI
 {
@@ -25,7 +28,7 @@ namespace NEP.MagPerception.UI
 
         public DisplayInfo DisplayInfo { get; private set; } = null;
 
-        public bool IsShown => gameObject.active;
+        public bool IsShown => gameObject?.active == true;
 
         private void Awake()
         {
@@ -153,9 +156,10 @@ namespace NEP.MagPerception.UI
             AmmoTypeText.text = ammoType;
         }
 
-        public void DisplayMagInfo(MagazineState magazineState)
+        public void DisplayMagInfo(Magazine magazine)
         {
-            DisplayInfo = new DisplayInfo(DisplayInfo.DisplayFor.MAG, magazineState);
+            DisplayInfo = new DisplayInfo(DisplayInfo.DisplayFor.MAG, magazine);
+            var magazineState = magazine?.magazineState;
             if (magazineState == null)
                 return;
 
@@ -183,7 +187,7 @@ namespace NEP.MagPerception.UI
             }
             else if (info.Type == DisplayInfo.DisplayFor.MAG)
             {
-                if (info.Object is MagazineState mag)
+                if (info.Object is Magazine mag)
                     DisplayMagInfo(mag);
             }
         }
@@ -221,17 +225,37 @@ namespace NEP.MagPerception.UI
         }
     }
 
-    public class DisplayInfo(DisplayInfo.DisplayFor Type, object Object)
+    public class DisplayInfo
     {
-        public DisplayFor Type { get; } = Type;
+        public DisplayFor Type { get; }
 
-        // Gun for GUN Type, MagazineState for MAG Type
-        public object Object { get; } = Object;
+        // Gun for GUN Type, Magazine for MAG Type
+        public object Object { get; }
+
+        public DisplayInfo(DisplayFor type, object @object)
+        {
+            Type = type;
+            if (@object is not Magazine && @object is not Gun)
+                throw new Exception("Object must be of type Gun or Magazine!");
+            Object = @object;
+        }
 
         public enum DisplayFor
         {
             GUN,
             MAG
+        }
+
+        public List<Grip> GetGrips()
+        {
+            if (Object is null)
+                return [];
+            else if (Object is Magazine)
+                return [(Object as Magazine).grip];
+            else if (Object is Gun)
+                return (Object as Gun).GetGrips();
+            else
+                throw new Exception("Object must be of type Gun or Magazine!");
         }
     }
 }

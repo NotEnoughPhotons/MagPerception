@@ -4,6 +4,7 @@ using UnityEngine;
 
 using Tomlet.Attributes;
 using System.Drawing;
+using BoneLib.BoneMenu;
 
 namespace NEP.MagPerception
 {
@@ -30,7 +31,7 @@ namespace NEP.MagPerception
         }
 
         [TomlNonSerialized]
-        private Vector3 _offset = new(0f, 0.1f, 0f);
+        private Vector3 _offset = new(0.075f, 0f, 0f);
 
         [TomlProperty("Offset")]
         public Vector3 Offset
@@ -76,8 +77,6 @@ namespace NEP.MagPerception
             set
             {
                 _showType = value;
-                if (MagPerceptionManager.Instance?.LastGun != null || MagPerceptionManager.Instance?.LastMag != null)
-                    MagPerceptionManager.Instance?.MagazineUI?.OnMagEvent();
                 Main.PrefsCategory.SaveToFile(false);
             }
         }
@@ -144,7 +143,7 @@ namespace NEP.MagPerception
             }
         }
 
-        public void ChangeHSV(HSVValue hsvValue, float value)
+        public void ChangeHSV(HSVValue hsvValue, FunctionElement preview, float value)
         {
             UnityEngine.Color.RGBToHSV(TextColor, out float H, out float S, out float V);
             switch (hsvValue)
@@ -159,6 +158,7 @@ namespace NEP.MagPerception
                     S = value; break;
             }
             TextColor = UnityEngine.Color.HSVToRGB(H, S, V);
+            preview.ElementColor = TextColor;
         }
 
         public void ChangeXYZOffset(OffsetValue xyz, float value)
