@@ -28,7 +28,7 @@ namespace NEP.MagPerception.UI
 
         public DisplayInfo DisplayInfo { get; private set; } = null;
 
-        public bool IsShown => gameObject?.active == true;
+        public bool IsShown => isActiveAndEnabled;
 
         private void Awake()
         {
@@ -62,6 +62,9 @@ namespace NEP.MagPerception.UI
             }
 
             UIShowType showType = Settings.Instance.ShowType;
+
+            if (DisplayInfo != null)
+                UpdateInfo(DisplayInfo);
 
             if (showType == UIShowType.Always)
             {
@@ -196,7 +199,8 @@ namespace NEP.MagPerception.UI
 
         public void UpdateInfo(DisplayInfo info)
         {
-            if (info == null) return;
+            if (info == null || info.Object == null)
+                return;
 
             if (info.Type == DisplayInfo.DisplayFor.GUN)
             {
