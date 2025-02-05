@@ -20,5 +20,5 @@ using System.Runtime.InteropServices;
 // If no MelonModGameAttribute is found or any of the Values for any MelonModGame on the Mod is null or empty it will be assumed the Mod is Universal.
 // Values for MelonModGame can be found in the Game's app.info file or printed at the top of every log directly beneath the Unity version.
 [assembly: MelonGame("Stress Level Zero", "BONELAB")]
-// The mod references the LabFusion assembly and uses some of its option to prevent the MagPerception UI from switching to a hand that is not of the local player or a gun that's not owned by them
+// The mod references the LabFusion assembly and uses some of its methods to prevent the MagazineUI from switching to a magazine or gun that's not being hold by the local player
 [assembly: MelonOptionalDependencies("LabFusion")]
