@@ -2,10 +2,8 @@
 
 using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
-using Il2CppSLZ.Marrow.Data;
 using System.Collections.Generic;
 using System;
-using NEP.MagPerception.Helper;
 
 namespace NEP.MagPerception.UI
 {
@@ -265,7 +263,7 @@ namespace NEP.MagPerception.UI
             else if (Object is Magazine)
                 return [(Object as Magazine).grip];
             else if (Object is Gun)
-                return (Object as Gun).GetGrips();
+                return [.. (Object as Gun).GetComponentsInChildren<Grip>()];
             else
                 throw new Exception("Object must be of type Gun or Magazine!");
         }

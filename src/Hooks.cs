@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 using Il2CppSLZ.Marrow;
 
-using NEP.MagPerception.Helper;
-
 namespace NEP.MagPerception
 {
     public static class Hooks
@@ -26,9 +24,6 @@ namespace NEP.MagPerception
 
                 if (gun != null)
                 {
-                    if (!gun.GetGrips().Contains(__instance))
-                        return;
-
                     if (MagPerceptionManager.Instance?.LastGunGrips.ContainsKey(gun) != true)
                     {
                         MagPerceptionManager.Instance?.LastGunGrips.Add(gun, [__instance]);
@@ -72,9 +67,6 @@ namespace NEP.MagPerception
 
                 if (gun != null)
                 {
-                    if (!gun.GetGrips().Contains(__instance))
-                        return;
-
                     if (MagPerceptionManager.Instance != null && MagPerceptionManager.Instance.LastGunGrips.TryGetValue(gun, out List<Grip> grips) && grips?.Count == 1)
                     {
                         MagPerceptionManager.Instance?.LastGunGrips?.Remove(gun);
