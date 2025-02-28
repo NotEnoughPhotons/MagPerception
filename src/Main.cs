@@ -12,7 +12,6 @@ using Il2CppSLZ.Marrow;
 using System.Collections.Generic;
 using System;
 using Object = UnityEngine.Object;
-using BoneLib;
 
 namespace NEP.MagPerception
 {
@@ -33,9 +32,11 @@ namespace NEP.MagPerception
 
         public static bool IsAssemblyLoaded(string name) => AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName() != null && string.Equals(x.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
 
+        public static bool IsBoneLibLoaded { get; } = IsAssemblyLoaded("BoneLib");
+
         public override void OnInitializeMelon()
         {
-            if (!IsAssemblyLoaded("BoneLib"))
+            if (!IsBoneLibLoaded)
             {
                 LoggerInstance.Error("BoneLib is required for this mod to work");
             }
@@ -100,6 +101,9 @@ namespace NEP.MagPerception
 
         public static void OnSceneWasLoaded()
         {
+            if (!IsBoneLibLoaded)
+                return;
+
             new GameObject("Mag Perception Manager").AddComponent<MagPerceptionManager>();
         }
 
@@ -166,6 +170,9 @@ namespace NEP.MagPerception
         {
             base.OnUpdate();
 
+            if (!IsBoneLibLoaded)
+                return;
+
             if (MagPerceptionManager.Instance != null)
             {
                 foreach (var val in MagPerceptionManager.Instance.MagazineUIs)
@@ -181,10 +188,10 @@ namespace NEP.MagPerception
                         magUI.fadeOut = false;
                 }
 
-                if (Player.HandsExist)
+                if (BoneLib.Player.HandsExist)
                 {
-                    MagUpdate(Player.LeftHand);
-                    MagUpdate(Player.RightHand);
+                    MagUpdate(BoneLib.Player.LeftHand);
+                    MagUpdate(BoneLib.Player.RightHand);
                 }
             }
         }
