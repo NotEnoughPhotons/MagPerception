@@ -2,8 +2,8 @@
 
 using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
-using System.Collections.Generic;
 using System;
+using Il2CppSLZ.Marrow.Data;
 
 namespace NEP.MagPerception.UI
 {
@@ -106,6 +106,17 @@ namespace NEP.MagPerception.UI
             }
         }
 
+        public static string GetReserve(CartridgeData data)
+        {
+            if (data == null || AmmoInventory.Instance == null || AmmoInventory.Instance.GetGroupByCartridge(data) == null)
+                return "0";
+
+            if (Main.IsAssemblyLoaded("InfiniteAmmo"))
+                return "INFINITE";
+            else
+                return AmmoInventory.Instance.GetCartridgeCount(data).ToString();
+        }
+
         public void DisplayGunInfo(Gun gun)
         {
             DisplayInfo = new DisplayInfo(DisplayInfo.DisplayFor.GUN, gun);
@@ -128,9 +139,7 @@ namespace NEP.MagPerception.UI
                     counterText = gun.chamberedCartridge != null ? $"+1/{gun.defaultMagazine.rounds}" : $"0/{gun.defaultMagazine.rounds}";
                     AmmoCounterText.text = counterText;
 
-                    int reserve = AmmoInventory.Instance.GetCartridgeCount(gun.defaultCartridge);
-
-                    AmmoInventoryText.text = $"RESERVE: {reserve}";
+                    AmmoInventoryText.text = $"RESERVE: {GetReserve(gun.defaultCartridge)}";
                     AmmoTypeText.text = !string.IsNullOrWhiteSpace(gun.defaultMagazine.platform) ? gun.defaultMagazine.platform : "Unknown";
                 }
                 else
@@ -153,12 +162,12 @@ namespace NEP.MagPerception.UI
             if (inChamber && !toppedOff && gun.cartridgeState != Gun.CartridgeStates.SPENT)
                 ammoCount++;
 
-            var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
+            var ammoInventory = GetReserve(magazineState.cartridgeData);
 
             counterText = toppedOff ? $"{ammoCount}+1/{maxAmmo}" : $"{ammoCount}/{maxAmmo}";
 
             AmmoCounterText.text = counterText;
-            AmmoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
+            AmmoInventoryText.text = "RESERVE: " + ammoInventory;
             AmmoTypeText.text = ammoType;
         }
 
@@ -178,10 +187,10 @@ namespace NEP.MagPerception.UI
             int maxAmmo = magazineState.magazineData.rounds;
             string ammoType = magazineState.magazineData.platform;
 
-            var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
+            var ammoInventory = GetReserve(magazineState.cartridgeData);
 
             AmmoCounterText.text = $"{ammoCount}/{maxAmmo}";
-            AmmoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
+            AmmoInventoryText.text = "RESERVE: " + ammoInventory;
             AmmoTypeText.text = ammoType;
         }
 
@@ -254,18 +263,6 @@ namespace NEP.MagPerception.UI
         {
             GUN,
             MAG
-        }
-
-        public List<Grip> GetGrips()
-        {
-            if (Object is null)
-                return [];
-            else if (Object is Magazine)
-                return [(Object as Magazine).grip];
-            else if (Object is Gun)
-                return [.. (Object as Gun).GetComponentsInChildren<Grip>()];
-            else
-                throw new Exception("Object must be of type Gun or Magazine!");
         }
     }
 }
