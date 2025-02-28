@@ -67,15 +67,21 @@ namespace NEP.MagPerception
 
                 if (gun != null)
                 {
-                    if (MagPerceptionManager.Instance != null && MagPerceptionManager.Instance.LastGunGrips.TryGetValue(gun, out List<Grip> grips) && grips?.Count == 1)
+                    if (MagPerceptionManager.Instance == null)
+                        return;
+
+                    if (MagPerceptionManager.Instance.LastGunGrips.TryGetValue(gun, out List<Grip> grips) && grips?.Count == 1)
                     {
-                        MagPerceptionManager.Instance?.LastGunGrips?.Remove(gun);
+                        MagPerceptionManager.Instance.LastGunGrips.Remove(gun);
                     }
                     else
                     {
-                        var _grips = MagPerceptionManager.Instance.LastGunGrips[gun];
-                        _grips.Remove(__instance);
-                        MagPerceptionManager.Instance.LastGunGrips[gun] = _grips;
+                        if (MagPerceptionManager.Instance.LastGunGrips.ContainsKey(gun))
+                        {
+                            var _grips = MagPerceptionManager.Instance.LastGunGrips[gun];
+                            _grips.Remove(__instance);
+                            MagPerceptionManager.Instance.LastGunGrips[gun] = _grips;
+                        }
                     }
                     MagPerceptionManager.Instance?.OnGunDetached(gun);
                 }
@@ -128,7 +134,7 @@ namespace NEP.MagPerception
                 if (!__instance.IsPartOfLocalPlayer())
                     return;
 
-                var gun = host.GetComponent<Gun>();
+                var gun = host?.GetComponent<Gun>();
                 if (gun == null)
                     return;
 

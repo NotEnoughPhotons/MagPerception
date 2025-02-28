@@ -217,6 +217,7 @@ namespace NEP.MagPerception
 
             if (LastGunGrips.ContainsKey(gun))
                 LastGunGrips[gun] = [];
+
             OnGunDetached(gun);
         }
     }
