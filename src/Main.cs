@@ -20,7 +20,7 @@ namespace NEP.MagPerception
         public const string Name = "MagPerception"; // Name of the Mod.  (MUST BE SET)
         public const string Author = "NotEnoughPhotons"; // Author of the Mod.  (Set as null if none)
         public const string Company = "NotEnoughPhotons"; // Company that made the Mod.  (Set as null if none)
-        public const string Version = "1.2.2"; // Version of the Mod.  (MUST BE SET)
+        public const string Version = "1.3.0"; // Version of the Mod.  (MUST BE SET)
         public const string DownloadLink = "https://thunderstore.io/c/bonelab/p/NotEnoughPhotons/MagPerception/"; // Download Link for the Mod.  (Set as null if none)
     }
 
