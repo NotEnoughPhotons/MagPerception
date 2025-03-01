@@ -92,9 +92,10 @@ namespace NEP.MagPerception
 
             var preview = textColorCategory.CreateFunction("This is a preview", Settings.Instance.TextColor, null);
 
-            textColorCategory.CreateFloat("Hue", Color.red, H, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.H, preview, val));
-            textColorCategory.CreateFloat("Saturation", Color.green, S, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.S, preview, val));
-            textColorCategory.CreateFloat("Value", Color.blue, V, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.V, preview, val));
+            textColorCategory.CreateFloat("Hue", Color.red, H, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.H, val));
+            textColorCategory.CreateFloat("Saturation", Color.green, S, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.S, val));
+            textColorCategory.CreateFloat("Value", Color.blue, V, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.V, val));
+            Settings.Instance.OnColorChanged += () => preview.ElementColor = Settings.Instance.TextColor;
 
             helperCategory.CreateFunction("Clear all MagazineUI", Color.red, () => MagPerceptionManager.Instance?.ClearMagazineUIs());
         }

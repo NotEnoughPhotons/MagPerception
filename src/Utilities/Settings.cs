@@ -4,8 +4,8 @@ using UnityEngine;
 
 using Tomlet.Attributes;
 using System.Drawing;
-using BoneLib.BoneMenu;
 using System.Collections.Generic;
+using System;
 
 namespace NEP.MagPerception
 {
@@ -156,11 +156,14 @@ namespace NEP.MagPerception
             set
             {
                 _textColorHEX = value;
+                OnColorChanged?.Invoke();
                 Main.PrefsCategory.SaveToFile(false);
             }
         }
 
-        public void ChangeHSV(HSVValue hsvValue, FunctionElement preview, float value)
+        public Action OnColorChanged;
+
+        public void ChangeHSV(HSVValue hsvValue, float value)
         {
             UnityEngine.Color.RGBToHSV(TextColor, out float H, out float S, out float V);
             switch (hsvValue)
@@ -175,7 +178,6 @@ namespace NEP.MagPerception
                     S = value; break;
             }
             TextColor = UnityEngine.Color.HSVToRGB(H, S, V);
-            preview.ElementColor = TextColor;
         }
 
         public void ChangeXYZOffset(OffsetValue xyz, float value)
