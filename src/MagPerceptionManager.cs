@@ -6,6 +6,7 @@ using Il2CppSLZ.Marrow;
 using Il2CppTMPro;
 using Il2CppSLZ.Bonelab;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NEP.MagPerception
 {
@@ -62,6 +63,14 @@ namespace NEP.MagPerception
                 return null;
 
             return MagazineUIs[gunOrMag];
+        }
+
+        internal void ClearMagazineUIs()
+        {
+            foreach (var item in MagazineUIs)
+                if (item.Value != null) Destroy(item.Value.gameObject);
+
+            MagazineUIs.Clear();
         }
 
         /// <summary>

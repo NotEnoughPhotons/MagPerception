@@ -79,6 +79,7 @@ namespace NEP.MagPerception
             var mainCategory = nepCategory.CreatePage("MagPerception", Color.white);
             var offsetCategory = mainCategory.CreatePage("Offset", Color.white);
             var textColorCategory = mainCategory.CreatePage("Text Color", Color.red);
+            var helperCategory = mainCategory.CreatePage("Helper", Color.cyan);
 
             mainCategory.CreateFloat("Text Opacity", Color.white, Settings.Instance.TextOpacity, 0.05f, 0.05f, 1, (value) => Settings.Instance.TextOpacity = value);
             mainCategory.CreateFloat("Scale", Color.white, Settings.Instance.InfoScale, 0.25f, 0.25f, 1.5f, (value) => Settings.Instance.InfoScale = value);
@@ -97,6 +98,8 @@ namespace NEP.MagPerception
             textColorCategory.CreateFloat("Hue", Color.red, H, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.H, preview, val));
             textColorCategory.CreateFloat("Saturation", Color.green, S, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.S, preview, val));
             textColorCategory.CreateFloat("Value", Color.blue, V, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.V, preview, val));
+
+            helperCategory.CreateFunction("Clear all MagazineUI", Color.red, () => MagPerceptionManager.Instance?.ClearMagazineUIs());
         }
 
         public static void OnSceneWasLoaded()
