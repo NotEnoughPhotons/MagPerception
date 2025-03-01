@@ -29,10 +29,7 @@ namespace NEP.MagPerception
         internal static AssetBundle Resources { get; private set; }
 
         internal static MelonPreferences_ReflectiveCategory PrefsCategory { get; private set; }
-
-        public static bool IsAssemblyLoaded(string name) => AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName() != null && string.Equals(x.GetName().Name, name, StringComparison.OrdinalIgnoreCase));
-
-        public static bool IsBoneLibLoaded { get; } = IsAssemblyLoaded("BoneLib");
+        public static bool IsBoneLibLoaded { get; } = FindMelon("BoneLib", "The BONELAB Modding Community") != null;
 
         public override void OnInitializeMelon()
         {

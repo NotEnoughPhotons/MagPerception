@@ -9,7 +9,7 @@ namespace NEP.MagPerception
     /// </summary>
     public static class Fusion
     {
-        public static bool HasFusion => Main.IsAssemblyLoaded("LabFusion");
+        public static bool HasFusion => Main.FindMelon("LabFusion", "Lakatrazz") != null;
 
         private static bool Internal_IsConnected()
         {

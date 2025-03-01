@@ -111,7 +111,7 @@ namespace NEP.MagPerception.UI
             if (data == null || AmmoInventory.Instance == null || AmmoInventory.Instance.GetGroupByCartridge(data) == null)
                 return "0";
 
-            if (Main.IsAssemblyLoaded("InfiniteAmmo"))
+            if (Main.FindMelon("InfiniteAmmo", "SoulWithMae") != null)
                 return "INFINITE";
             else
                 return AmmoInventory.Instance.GetCartridgeCount(data).ToString();
