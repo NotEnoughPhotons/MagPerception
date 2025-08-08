@@ -26,6 +26,8 @@ namespace NEP.MagPerception
 
     public class Main : MelonMod
     {
+        internal static MelonLogger.Instance Logger { get; private set; }
+        
         internal static AssetBundle Resources { get; private set; }
 
         internal static MelonPreferences_ReflectiveCategory PrefsCategory { get; private set; }
@@ -35,7 +37,7 @@ namespace NEP.MagPerception
         {
             if (!IsBoneLibLoaded)
             {
-                LoggerInstance.Error("BoneLib is required for this mod to work");
+                Logger.Error("BoneLib is required for this mod to work");
             }
             else
             {
@@ -45,6 +47,8 @@ namespace NEP.MagPerception
 
         private static void OnInitialize()
         {
+            Logger = new MelonLogger.Instance("MagPerception");
+            
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             const string bundlePath = "NEP.MagPerception.Resources.";
             string targetBundle = BoneLib.HelperMethods.IsAndroid() ? "mp_resources_quest.pack" : "mp_resources_pcvr.pack";
