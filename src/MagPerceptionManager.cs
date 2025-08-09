@@ -3,133 +3,239 @@
 using NEP.MagPerception.UI;
 
 using Il2CppSLZ.Marrow;
-using Il2CppSLZ.Marrow.Data;
 using Il2CppTMPro;
+using Il2CppSLZ.Bonelab;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NEP.MagPerception
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
-    public class MagPerceptionManager : MonoBehaviour
+    public static class MagPerceptionManager
     {
-        public MagPerceptionManager(System.IntPtr ptr) : base(ptr) { }
+        internal static Dictionary<object, MagazineUI> MagazineUIs { get; } = [];
 
-        public static MagPerceptionManager instance;
+        public static List<Gun> LastGuns { get; } = [];
 
-        public MagazineUI magazineUI { get; private set; }
+        public static List<Magazine> LastMags { get; } = [];
 
-        public MagazineData grabbedMagazineData { get; private set; }
+        internal static readonly Dictionary<Gun, List<Grip>> LastGunGrips = [];
 
-        public Hand playerLeftHand => BoneLib.Player.LeftHand;
-        public Hand playerRightHand => BoneLib.Player.RightHand;
+        internal static GameObject UIHolder { get; private set; }
 
-        public Transform lastGrabbedTransform;
-        public Gun lastGun;
-        public Magazine lastMag;
-        public Hand lastHand;
-
-        private void Awake()
+        internal static void Initialize()
         {
-            instance = this;
+            UIHolder = new GameObject("[MagPerception] - UI Holder");
         }
-
-        private void Start()
+        
+        internal static void Clear()
         {
-            GameObject magUI = GameObject.Instantiate(Main.resources.LoadAsset("MagazineLayer").Cast<GameObject>(), transform);
+            MagazineUIs.Clear();
+            LastGuns?.Clear();
+            LastMags?.Clear();
+            LastGunGrips.Clear();
+            UIHolder = null;
+        }
+        
+        private static MagazineUI AddMagazineUI(object gunOrMag, Vector3 startPosition, bool addOffset = true)
+        {
+            if (gunOrMag.GetType() != typeof(Magazine) && gunOrMag.GetType() != typeof(Gun))
+                return null;
 
-            magUI.transform.SetParent(transform);
-            magazineUI = magUI.AddComponent<MagazineUI>();
+            if (MagazineUIs.ContainsKey(gunOrMag))
+                return GetMagazineUI(gunOrMag);
+            
+            GameObject magUI = GameObject.Instantiate(Main.Resources.LoadAsset("MagazineLayer").Cast<GameObject>(), UIHolder.transform);
 
-            magazineUI.ammoCounterText = magUI.transform.Find("AmmoCounter").GetComponent<TextMeshProUGUI>();
-            magazineUI.ammoInventoryText = magUI.transform.Find("AmmoInventory").GetComponent<TextMeshProUGUI>();
-            magazineUI.ammoTypeText = magUI.transform.Find("AmmoType").GetComponent<TextMeshProUGUI>();
-            magazineUI.animator = magUI.GetComponent<Animator>();
+            magUI.transform.SetParent(UIHolder.transform);
+            magUI.transform.localPosition = !addOffset ? startPosition : (startPosition + Settings.Instance?.Offset ?? Vector3.zero);
+            MagazineUI MagazineUI = magUI.AddComponent<MagazineUI>();
+
+            MagazineUI.AmmoCounterText = magUI.transform.Find("AmmoCounter").GetComponent<TextMeshProUGUI>();
+            MagazineUI.AmmoInventoryText = magUI.transform.Find("AmmoInventory").GetComponent<TextMeshProUGUI>();
+            MagazineUI.AmmoTypeText = magUI.transform.Find("AmmoType").GetComponent<TextMeshProUGUI>();
+            MagazineUI.Animator = magUI.GetComponent<Animator>();
 
             magUI.SetActive(false);
+
+            MagazineUIs.Add(gunOrMag, MagazineUI);
+
+            return MagazineUI;
+        }
+
+        private static MagazineUI GetMagazineUI(object gunOrMag)
+        {
+            if (gunOrMag is not Magazine && gunOrMag is not Gun)
+                return null;
+
+            if (!MagazineUIs.ContainsKey(gunOrMag))
+                return null;
+
+            return MagazineUIs[gunOrMag];
+        }
+
+        internal static void ClearMagazineUIs()
+        {
+            foreach (var item in MagazineUIs)
+                if (item.Value != null) GameObject.Destroy(item.Value.gameObject);
+
+            MagazineUIs.Clear();
         }
 
         /// <summary>
         /// Called when a player grabs a magazine.
         /// </summary>
-        public void OnMagazineAttached(Magazine magazine)
+        internal static void OnMagazineAttached(Magazine magazine)
         {
-            lastMag = magazine;
-            magazineUI.Show();
+            if (magazine == null)
+                return;
+
+            LastMags.Add(magazine);
+
+            var magazineUI = AddMagazineUI(magazine, magazine.insertPointTransform.position);
+            if (magazineUI == null)
+                return;
+
             magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(lastMag.insertPointTransform);
-            magazineUI.DisplayMagInfo(magazine.magazineState);
+            magazineUI.UpdateParent(magazine.insertPointTransform);
+            magazineUI.DisplayMagInfo(magazine);
+        }
+
+        /// <summary>
+        /// Called when a magazine previously grabbed is dropped
+        /// </summary>
+        internal static void OnMagazineDetached(Magazine magazine)
+        {
+            if (!LastMags.Contains(magazine))
+                return;
+
+            var magUI = GetMagazineUI(magazine);
+
+            LastMags.Remove(magazine);
+
+            magUI?.FadeOut();
         }
 
         /// <summary>
         /// Called when the player inserts a magazine into their gun.
         /// </summary>
-        public void OnMagazineInserted(MagazineState magazineState, Gun gun)
+        internal static void OnMagazineInserted(Gun gun)
         {
-            lastGun = gun;
-            magazineUI.Show();
+            if (!Settings.Instance.ShowWithGun)
+                return;
+
+            if (!LastGuns.Contains(gun))
+                return;
+
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
+            if (magazineUI == null)
+                return;
+
             magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(lastGun.firePointTransform);
-            magazineUI.DisplayGunInfo(lastGun);
+            magazineUI.UpdateParent(gun.firePointTransform);
+            magazineUI.DisplayGunInfo(gun);
         }
 
         /// <summary>
         /// Called when the player ejects the magazine from their gun.
         /// </summary>
-        public void OnMagazineEjected(MagazineState magazineState, Gun gun)
+        internal static void OnMagazineEjected(Gun gun)
         {
-            magazineUI.Show();
+            if (!Settings.Instance.ShowWithGun)
+                return;
+
+            if (!LastGuns.Contains(gun))
+                return;
+
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
+            if (magazineUI == null)
+                return;
+
             magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(lastGun.firePointTransform);
-            magazineUI.DisplayGunInfo(lastGun);
+            magazineUI.UpdateParent(gun.firePointTransform);
+            magazineUI.DisplayGunInfo(gun);
         }
 
         /// <summary>
         /// Called when a player grabs a gun.
         /// </summary>
-        public void OnGunAttached(Gun gun)
+        internal static void OnGunAttached(Gun gun)
         {
-            if (!Settings.ShowWithGun)
-            {
+            if (!Settings.Instance.ShowWithGun)
                 return;
-            }
 
-            lastGun = gun;
+            if (gun == null)
+                return;
+
+            if (gun.GetComponent<SpawnGun>() != null)
+                return;
+
+            LastGuns.Add(gun);
+
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
+            if (magazineUI == null)
+                return;
+
             magazineUI.OnMagEvent();
             magazineUI.UpdateParent(gun.firePointTransform);
-            magazineUI.Show();
+            magazineUI.DisplayGunInfo(gun);
         }
 
         /// <summary>
         /// Called when a player lets go of a gun.
         /// </summary>
-        public void OnGunDetached(Gun gun)
+        internal static void OnGunDetached(Gun gun)
         {
-            if (!Settings.ShowWithGun)
-            {
+            if (!Settings.Instance.ShowWithGun)
                 return;
-            }
 
-            lastGun = null;
-            magazineUI.OnMagEvent();
+            if (LastGunGrips.TryGetValue(gun, out List<Grip> grips) && grips.Count > 0)
+                return;
 
-            if(lastMag != null)
-            {
-                magazineUI.UpdateParent(gun.firePointTransform);
-                magazineUI.DisplayMagInfo(lastMag.magazineState);
-            }
+            if (!LastGuns.Contains(gun))
+                return;
+
+            LastGuns.Remove(gun);
+
+            var magUI = GetMagazineUI(gun);
+
+            magUI?.FadeOut();
         }
 
         /// <summary>
         /// Called when a round (spent or unspent) is ejected from the chamber.
         /// </summary>
-        public void OnGunEjectRound()
+        internal static void OnGunEjectRound(Gun gun)
         {
-            if (!Settings.ShowWithGun)
-            {
+            if (!Settings.Instance.ShowWithGun)
                 return;
-            }
+
+            if (!LastGuns.Contains(gun))
+                return;
+
+            var magazineUI = AddMagazineUI(gun, gun.firePointTransform.position);
+            if (magazineUI == null)
+                return;
 
             magazineUI.OnMagEvent();
-            magazineUI.DisplayGunInfo(lastGun);
+            magazineUI.UpdateParent(gun.firePointTransform);
+            magazineUI.DisplayGunInfo(gun);
+        }
+
+        /// <summary>
+        /// Called when a gun gets holstered
+        /// </summary>
+        internal static void OnGunHolstered(Gun gun)
+        {
+            if (!Settings.Instance.ShowWithGun)
+                return;
+
+            if (!LastGuns.Contains(gun))
+                return;
+
+            if (LastGunGrips.ContainsKey(gun))
+                LastGunGrips[gun] = [];
+
+            OnGunDetached(gun);
         }
     }
 }
