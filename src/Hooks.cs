@@ -24,17 +24,17 @@ namespace NEP.MagPerception
 
                 if (gun != null)
                 {
-                    if (MagPerceptionManager.Instance?.LastGunGrips.ContainsKey(gun) != true)
+                    if (MagPerceptionManager.LastGunGrips.ContainsKey(gun) != true)
                     {
-                        MagPerceptionManager.Instance?.LastGunGrips.Add(gun, [__instance]);
+                        MagPerceptionManager.LastGunGrips.Add(gun, [__instance]);
                     }
                     else
                     {
-                        var grips = MagPerceptionManager.Instance.LastGunGrips[gun];
+                        var grips = MagPerceptionManager.LastGunGrips[gun];
                         grips.Add(__instance);
-                        MagPerceptionManager.Instance.LastGunGrips[gun] = grips;
+                        MagPerceptionManager.LastGunGrips[gun] = grips;
                     }
-                    MagPerceptionManager.Instance?.OnGunAttached(gun);
+                    MagPerceptionManager.OnGunAttached(gun);
                 }
                 else
                 {
@@ -44,7 +44,7 @@ namespace NEP.MagPerception
                         if (__instance != mag.grip)
                             return;
 
-                        MagPerceptionManager.Instance?.OnMagazineAttached(mag);
+                        MagPerceptionManager.OnMagazineAttached(mag);
                         if (!HoldMagazines.ContainsKey(hand))
                             HoldMagazines.Add(hand, mag);
                     }
@@ -67,23 +67,20 @@ namespace NEP.MagPerception
 
                 if (gun != null)
                 {
-                    if (MagPerceptionManager.Instance == null)
-                        return;
-
-                    if (MagPerceptionManager.Instance.LastGunGrips.TryGetValue(gun, out List<Grip> grips) && grips?.Count == 1)
+                    if (MagPerceptionManager.LastGunGrips.TryGetValue(gun, out List<Grip> grips) && grips?.Count == 1)
                     {
-                        MagPerceptionManager.Instance.LastGunGrips.Remove(gun);
+                        MagPerceptionManager.LastGunGrips.Remove(gun);
                     }
                     else
                     {
-                        if (MagPerceptionManager.Instance.LastGunGrips.ContainsKey(gun))
+                        if (MagPerceptionManager.LastGunGrips.ContainsKey(gun))
                         {
-                            var _grips = MagPerceptionManager.Instance.LastGunGrips[gun];
+                            var _grips = MagPerceptionManager.LastGunGrips[gun];
                             _grips.Remove(__instance);
-                            MagPerceptionManager.Instance.LastGunGrips[gun] = _grips;
+                            MagPerceptionManager.LastGunGrips[gun] = _grips;
                         }
                     }
-                    MagPerceptionManager.Instance?.OnGunDetached(gun);
+                    MagPerceptionManager.OnGunDetached(gun);
                 }
                 else
                 {
@@ -96,7 +93,7 @@ namespace NEP.MagPerception
                         if (OnGripAttached.HoldMagazines.ContainsKey(hand))
                             OnGripAttached.HoldMagazines.Remove(hand);
 
-                        MagPerceptionManager.Instance?.OnMagazineDetached(mag);
+                        MagPerceptionManager.OnMagazineDetached(mag);
                     }
                 }
             }
@@ -106,21 +103,21 @@ namespace NEP.MagPerception
         public static class OnGunEjectRound
         {
             public static void Postfix(Gun __instance) =>
-                MagPerceptionManager.Instance?.OnGunEjectRound(__instance);
+                MagPerceptionManager.OnGunEjectRound(__instance);
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnMagazineInserted))]
         public static class OnMagazineInserted
         {
             public static void Postfix(Gun __instance) =>
-                MagPerceptionManager.Instance?.OnMagazineInserted(__instance);
+                MagPerceptionManager.OnMagazineInserted(__instance);
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnMagazineRemoved))]
         public static class OnMagazineRemoved
         {
             public static void Postfix(Gun __instance) =>
-                MagPerceptionManager.Instance?.OnMagazineEjected(__instance);
+                MagPerceptionManager.OnMagazineEjected(__instance);
         }
 
         [HarmonyLib.HarmonyPatch(typeof(InventorySlotReceiver), nameof(InventorySlotReceiver.InsertInSlot))]
@@ -138,7 +135,7 @@ namespace NEP.MagPerception
                 if (gun == null)
                     return;
 
-                MagPerceptionManager.Instance?.OnGunHolstered(gun);
+                MagPerceptionManager.OnGunHolstered(gun);
             }
         }
     }

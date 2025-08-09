@@ -10,35 +10,43 @@ using System.Linq;
 
 namespace NEP.MagPerception
 {
-    [MelonLoader.RegisterTypeInIl2Cpp]
-    public class MagPerceptionManager(System.IntPtr ptr) : MonoBehaviour(ptr)
+    public static class MagPerceptionManager
     {
-        public static MagPerceptionManager Instance { get; private set; }
+        internal static Dictionary<object, MagazineUI> MagazineUIs { get; } = [];
 
-        internal Dictionary<object, MagazineUI> MagazineUIs { get; } = [];
+        public static List<Gun> LastGuns { get; } = [];
 
-        public List<Gun> LastGuns { get; } = [];
+        public static List<Magazine> LastMags { get; } = [];
 
-        public List<Magazine> LastMags { get; } = [];
+        internal static readonly Dictionary<Gun, List<Grip>> LastGunGrips = [];
 
-        internal readonly Dictionary<Gun, List<Grip>> LastGunGrips = [];
+        internal static GameObject UIHolder { get; private set; }
 
-        private void Awake()
+        internal static void Initialize()
         {
-            Instance = this;
+            UIHolder = new GameObject("[MagPerception] - UI Holder");
         }
-
-        private MagazineUI AddMagazineUI(object gunOrMag, Vector3 startPosition, bool addOffset = true)
+        
+        internal static void Clear()
+        {
+            MagazineUIs.Clear();
+            LastGuns?.Clear();
+            LastMags?.Clear();
+            LastGunGrips.Clear();
+            UIHolder = null;
+        }
+        
+        private static MagazineUI AddMagazineUI(object gunOrMag, Vector3 startPosition, bool addOffset = true)
         {
             if (gunOrMag.GetType() != typeof(Magazine) && gunOrMag.GetType() != typeof(Gun))
                 return null;
 
             if (MagazineUIs.ContainsKey(gunOrMag))
                 return GetMagazineUI(gunOrMag);
+            
+            GameObject magUI = GameObject.Instantiate(Main.Resources.LoadAsset("MagazineLayer").Cast<GameObject>(), UIHolder.transform);
 
-            GameObject magUI = GameObject.Instantiate(Main.Resources.LoadAsset("MagazineLayer").Cast<GameObject>(), transform);
-
-            magUI.transform.SetParent(transform);
+            magUI.transform.SetParent(UIHolder.transform);
             magUI.transform.localPosition = !addOffset ? startPosition : (startPosition + Settings.Instance?.Offset ?? Vector3.zero);
             MagazineUI MagazineUI = magUI.AddComponent<MagazineUI>();
 
@@ -54,7 +62,7 @@ namespace NEP.MagPerception
             return MagazineUI;
         }
 
-        private MagazineUI GetMagazineUI(object gunOrMag)
+        private static MagazineUI GetMagazineUI(object gunOrMag)
         {
             if (gunOrMag is not Magazine && gunOrMag is not Gun)
                 return null;
@@ -65,10 +73,10 @@ namespace NEP.MagPerception
             return MagazineUIs[gunOrMag];
         }
 
-        internal void ClearMagazineUIs()
+        internal static void ClearMagazineUIs()
         {
             foreach (var item in MagazineUIs)
-                if (item.Value != null) Destroy(item.Value.gameObject);
+                if (item.Value != null) GameObject.Destroy(item.Value.gameObject);
 
             MagazineUIs.Clear();
         }
@@ -76,7 +84,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a player grabs a magazine.
         /// </summary>
-        internal void OnMagazineAttached(Magazine magazine)
+        internal static void OnMagazineAttached(Magazine magazine)
         {
             if (magazine == null)
                 return;
@@ -95,7 +103,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a magazine previously grabbed is dropped
         /// </summary>
-        internal void OnMagazineDetached(Magazine magazine)
+        internal static void OnMagazineDetached(Magazine magazine)
         {
             if (!LastMags.Contains(magazine))
                 return;
@@ -110,7 +118,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when the player inserts a magazine into their gun.
         /// </summary>
-        internal void OnMagazineInserted(Gun gun)
+        internal static void OnMagazineInserted(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
                 return;
@@ -130,7 +138,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when the player ejects the magazine from their gun.
         /// </summary>
-        internal void OnMagazineEjected(Gun gun)
+        internal static void OnMagazineEjected(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
                 return;
@@ -150,7 +158,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a player grabs a gun.
         /// </summary>
-        internal void OnGunAttached(Gun gun)
+        internal static void OnGunAttached(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
                 return;
@@ -175,7 +183,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a player lets go of a gun.
         /// </summary>
-        internal void OnGunDetached(Gun gun)
+        internal static void OnGunDetached(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
                 return;
@@ -196,7 +204,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a round (spent or unspent) is ejected from the chamber.
         /// </summary>
-        internal void OnGunEjectRound(Gun gun)
+        internal static void OnGunEjectRound(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
                 return;
@@ -216,7 +224,7 @@ namespace NEP.MagPerception
         /// <summary>
         /// Called when a gun gets holstered
         /// </summary>
-        internal void OnGunHolstered(Gun gun)
+        internal static void OnGunHolstered(Gun gun)
         {
             if (!Settings.Instance.ShowWithGun)
                 return;

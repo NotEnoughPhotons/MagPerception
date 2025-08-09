@@ -80,18 +80,18 @@ namespace NEP.MagPerception
                 _showType = value;
                 Main.PrefsCategory.SaveToFile(false);
 
-                if (MagPerceptionManager.Instance?.LastGuns?.Count > 0 || MagPerceptionManager.Instance?.LastMags?.Count > 0)
+                if (MagPerceptionManager.LastGuns?.Count > 0 || MagPerceptionManager.LastMags?.Count > 0)
                 {
                     List<MagazineUI> UIs = [];
-                    MagPerceptionManager.Instance.LastGuns.ForEach(x =>
+                    MagPerceptionManager.LastGuns.ForEach(x =>
                     {
-                        if (x != null && MagPerceptionManager.Instance.MagazineUIs.ContainsKey(x))
-                            UIs.Add(MagPerceptionManager.Instance.MagazineUIs[x]);
+                        if (x != null && MagPerceptionManager.MagazineUIs.ContainsKey(x))
+                            UIs.Add(MagPerceptionManager.MagazineUIs[x]);
                     });
-                    MagPerceptionManager.Instance.LastMags.ForEach(x =>
+                    MagPerceptionManager.LastMags.ForEach(x =>
                     {
-                        if (x != null && MagPerceptionManager.Instance.MagazineUIs.ContainsKey(x))
-                            UIs.Add(MagPerceptionManager.Instance.MagazineUIs[x]);
+                        if (x != null && MagPerceptionManager.MagazineUIs.ContainsKey(x))
+                            UIs.Add(MagPerceptionManager.MagazineUIs[x]);
                     });
                     UIs.ForEach(x => x.OnMagEvent());
                 }

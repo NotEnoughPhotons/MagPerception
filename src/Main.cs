@@ -101,7 +101,7 @@ namespace NEP.MagPerception
             textColorCategory.CreateFloat("Value", Color.blue, V, 0.05f, 0, 1, (val) => Settings.Instance.ChangeHSV(Settings.HSVValue.V, val));
             Settings.Instance.OnColorChanged += () => preview.ElementColor = Settings.Instance.TextColor;
 
-            helperCategory.CreateFunction("Clear all MagazineUI", Color.red, () => MagPerceptionManager.Instance?.ClearMagazineUIs());
+            helperCategory.CreateFunction("Clear all MagazineUI", Color.red, () => MagPerceptionManager.ClearMagazineUIs());
         }
 
         public static void OnSceneWasLoaded()
@@ -109,7 +109,8 @@ namespace NEP.MagPerception
             if (!IsBoneLibLoaded)
                 return;
 
-            new GameObject("Mag Perception Manager").AddComponent<MagPerceptionManager>();
+            MagPerceptionManager.Clear();
+            MagPerceptionManager.Initialize();
         }
 
         internal static Object GetObjectFromResources(string name)
@@ -121,9 +122,6 @@ namespace NEP.MagPerception
 
         void MagUpdate(Hand hand)
         {
-            if (MagPerceptionManager.Instance == null)
-                return;
-
             if (!Hooks.OnGripAttached.HoldMagazines.ContainsKey(hand))
                 return;
 
@@ -131,7 +129,7 @@ namespace NEP.MagPerception
             if (mag == null)
                 return;
 
-            foreach (var ui in MagPerceptionManager.Instance.MagazineUIs)
+            foreach (var ui in MagPerceptionManager.MagazineUIs)
             {
                 if (ui.Key != (object)mag)
                     continue;
@@ -143,7 +141,7 @@ namespace NEP.MagPerception
                     if (IsPressed(hand))
                     {
                         if (mag != null && magUI != null && magUI?.IsShown != true)
-                            MagPerceptionManager.Instance?.OnMagazineAttached(mag);
+                            MagPerceptionManager.OnMagazineAttached(mag);
                     }
                 }
             }
@@ -178,26 +176,23 @@ namespace NEP.MagPerception
             if (!IsBoneLibLoaded)
                 return;
 
-            if (MagPerceptionManager.Instance != null)
+            foreach (var val in MagPerceptionManager.MagazineUIs)
             {
-                foreach (var val in MagPerceptionManager.Instance.MagazineUIs)
-                {
-                    var magUI = val.Value;
+                var magUI = val.Value;
 
-                    if (magUI == null)
-                        continue;
+                if (magUI == null)
+                    continue;
 
-                    if (magUI.fadeOut && magUI.IsShown)
-                        magUI.FadeOut();
-                    else if (!magUI.IsShown)
-                        magUI.fadeOut = false;
-                }
+                if (magUI.fadeOut && magUI.IsShown)
+                    magUI.FadeOut();
+                else if (!magUI.IsShown)
+                    magUI.fadeOut = false;
+            }
 
-                if (BoneLib.Player.HandsExist)
-                {
-                    MagUpdate(BoneLib.Player.LeftHand);
-                    MagUpdate(BoneLib.Player.RightHand);
-                }
+            if (BoneLib.Player.HandsExist)
+            {
+                MagUpdate(BoneLib.Player.LeftHand);
+                MagUpdate(BoneLib.Player.RightHand);
             }
         }
     }
