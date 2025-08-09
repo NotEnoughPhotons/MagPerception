@@ -161,6 +161,7 @@ namespace NEP.MagPerception
             }
         }
 
+        [TomlNonSerialized]
         public Action OnColorChanged;
 
         public void ChangeHSV(HSVValue hsvValue, float value)
