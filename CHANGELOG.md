@@ -3,6 +3,11 @@ This is the changelog for Mag Perception! This changelog only features public re
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [1.3.1] - 8/9/2025
+
+### Fixed
+- Fixed an unzipping problem caused by a solar ray
+
 ## [1.3.0] - 8/9/2025
 This update was a joint effort between [HAHOOS](https://new.thunderstore.io/c/bonelab/p/HAHOOS/) and [adamdev](https://new.thunderstore.io/c/bonelab/p/NotEnoughPhotons).
 
