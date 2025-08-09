@@ -1,12 +1,12 @@
 <p align="center">
-<img src="https://github.com/Not-Enough-Photons/MagPerception/blob/master/img/logo.png?raw=true" alt="MagPerception" width = 250px height = 250px>
+<img src="https://github.com/Not-Enough-Photons/MagPerception/blob/master/Media/logo.png?raw=true" alt="MagPerception" width = 250px height = 250px>
 </img>
 </p>
 <p align="center">
 <b>MagPerception</b> is an ammo visualization mod that helps you see how many bullets exist in your magazines.
 </p>
 <p align="center">
-<a href="https://github.com/Not-Enough-Photons/MagPerception/releases/latest"><img src="https://github.com/Not-Enough-Photons/MagPerception/blob/master/img/output.gif?raw=true" alt="Demonstration"></a>
+<a href="https://github.com/Not-Enough-Photons/MagPerception/releases/latest"><img src="https://github.com/Not-Enough-Photons/MagPerception/blob/master/Media/output.gif?raw=true" alt="Demonstration"></a>
 </p>
 
 <h1>Installation</h1>
