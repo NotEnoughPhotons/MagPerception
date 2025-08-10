@@ -20,7 +20,7 @@ namespace NEP.MagPerception
         public const string Name = "MagPerception"; // Name of the Mod.  (MUST BE SET)
         public const string Author = "NotEnoughPhotons"; // Author of the Mod.  (Set as null if none)
         public const string Company = "NotEnoughPhotons"; // Company that made the Mod.  (Set as null if none)
-        public const string Version = "1.3.0"; // Version of the Mod.  (MUST BE SET)
+        public const string Version = "1.3.2"; // Version of the Mod.  (MUST BE SET)
         public const string DownloadLink = "https://thunderstore.io/c/bonelab/p/NotEnoughPhotons/MagPerception/"; // Download Link for the Mod.  (Set as null if none)
     }
 
@@ -35,6 +35,8 @@ namespace NEP.MagPerception
 
         public override void OnInitializeMelon()
         {
+            Logger = new MelonLogger.Instance("MagPerception");
+
             if (!IsBoneLibLoaded)
             {
                 Logger.Error("BoneLib is required for this mod to work");
@@ -45,10 +47,9 @@ namespace NEP.MagPerception
             }
         }
 
+        
         private static void OnInitialize()
         {
-            Logger = new MelonLogger.Instance("MagPerception");
-            
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             const string bundlePath = "NEP.MagPerception.Resources.";
             string targetBundle = BoneLib.HelperMethods.IsAndroid() ? "mp_resources_quest.pack" : "mp_resources_pcvr.pack";
